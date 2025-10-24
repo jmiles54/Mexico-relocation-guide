@@ -82,6 +82,44 @@ export default function Neighborhood() {
     { day: "Fri", high: 31, low: 24, condition: "sunny" as const },
   ];
 
+  const venues = [
+    {
+      id: 1,
+      name: "Elixir Wine Bar",
+      category: "wine-bar" as const,
+      address: "Calle Basilio Badillo 289",
+      priceRange: "$$" as const,
+      crowdDemographic: "50+ Mature Expats",
+      specialEvent: "Wine Mondays 6-9pm",
+      image: wineBarImage,
+      rating: 4.8,
+      tags: ["wine", "mature", "expat"]
+    },
+    {
+      id: 2,
+      name: "La Copa Wine Bar",
+      category: "wine-bar" as const,
+      address: "Pulpito 102",
+      priceRange: "$$" as const,
+      crowdDemographic: "Ladies Night Thursdays",
+      specialEvent: "Reserve tasting: 210 MXN",
+      image: wineBarImage,
+      rating: 4.6,
+      tags: ["wine", "women", "expat"]
+    },
+    {
+      id: 3,
+      name: "A Page in the Sun",
+      category: "cafe" as const,
+      address: "Olas Altas 399",
+      priceRange: "$" as const,
+      crowdDemographic: "60% English speakers",
+      specialEvent: "Book club Wednesdays",
+      rating: 4.7,
+      tags: ["cafe", "books", "expat"]
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header with breadcrumb */}
@@ -228,35 +266,9 @@ export default function Neighborhood() {
               </p>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <VenueCard
-                  name="Elixir Wine Bar"
-                  category="wine-bar"
-                  address="Calle Basilio Badillo 289"
-                  priceRange="$$"
-                  crowdDemographic="50+ Mature Expats"
-                  specialEvent="Wine Mondays 6-9pm"
-                  image={wineBarImage}
-                  rating={4.8}
-                />
-                <VenueCard
-                  name="La Copa Wine Bar"
-                  category="wine-bar"
-                  address="Pulpito 102"
-                  priceRange="$$"
-                  crowdDemographic="Ladies Night Thursdays"
-                  specialEvent="Reserve tasting: 210 MXN"
-                  image={wineBarImage}
-                  rating={4.6}
-                />
-                <VenueCard
-                  name="A Page in the Sun"
-                  category="cafe"
-                  address="Olas Altas 399"
-                  priceRange="$"
-                  crowdDemographic="60% English speakers"
-                  specialEvent="Book club Wednesdays"
-                  rating={4.7}
-                />
+                {venues.map(venue => (
+                  <VenueCard key={venue.id} {...venue} />
+                ))}
               </div>
             </div>
           </TabsContent>
@@ -318,33 +330,43 @@ export default function Neighborhood() {
             <div>
               <h2 className="text-2xl font-bold mb-4">Live Webcam Feeds</h2>
               <p className="text-muted-foreground mb-6">
-                See real-time views of beaches, plazas, and key locations
+                See real-time views of beaches, plazas, and key locations in Puerto Vallarta
               </p>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <WebcamFeed
                   location="Zona Romántica"
-                  title="Playa Olas Altas"
+                  title="Playa Olas Altas Beach"
+                  streamUrl="https://www.youtube.com/embed/qL9kS-u7w_k?autoplay=1&mute=1&controls=0&loop=1&playlist=qL9kS-u7w_k"
+                  embedType="iframe"
                   isLive={true}
-                  placeholderImage={beachImage}
                 />
                 <WebcamFeed
                   location="Downtown"
                   title="Malecón Boardwalk"
+                  streamUrl="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1&controls=0&loop=1&playlist=dQw4w9WgXcQ"
+                  embedType="iframe"
                   isLive={true}
-                  placeholderImage={beachImage}
                 />
                 <WebcamFeed
                   location="Marina Vallarta"
-                  title="Marina Beach View"
+                  title="Marina & Yacht Harbor"
                   isLive={false}
                   placeholderImage={beachImage}
                 />
                 <WebcamFeed
-                  location="South Beach"
-                  title="Conchas Chinas"
+                  location="South Zone"
+                  title="Los Muertos Pier"
                   isLive={true}
+                  placeholderImage={beachImage}
                 />
+              </div>
+
+              <div className="mt-8 p-4 bg-amber-50 border border-amber-200 rounded-md">
+                <p className="text-sm text-amber-900">
+                  <strong>Note:</strong> Webcam feeds are provided by third-party sources and may be temporarily unavailable. 
+                  Click the external link icon to view the full-screen stream. These are demo feeds - production version will use dedicated Puerto Vallarta webcams from EarthCam, Windy.com, or local tourism boards.
+                </p>
               </div>
             </div>
           </TabsContent>
