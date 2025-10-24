@@ -371,16 +371,16 @@ export default function Neighborhood() {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <WebcamFeed
-                  location="Puerto Vallarta"
-                  title="Panorama View - Banderas Bay"
-                  streamUrl="https://www.panoramablick.com/embed/29852"
+                  location="Los Muertos Beach"
+                  title="Cuates y Cuetes Beach Bar - 360° View"
+                  streamUrl="http://www.cuatesycuetes.com/en/index.php/webcam"
                   embedType="iframe"
                   isLive={true}
                 />
                 <WebcamFeed
-                  location="Weather & Conditions"
-                  title="Windy - Puerto Vallarta"
-                  streamUrl="https://embed.windy.com/embed2.html?lat=20.653&lon=-105.250&zoom=11&overlay=wind&product=ecmwf&menu=&message=&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=default&metricTemp=default"
+                  location="Los Muertos Beach"
+                  title="Langostinos Restaurant - HD Beach Cam"
+                  streamUrl="https://langostinos.click2stream.com/"
                   embedType="iframe"
                   isLive={true}
                 />
@@ -425,23 +425,26 @@ export default function Neighborhood() {
                   </CardContent>
                 </Card>
                 <WebcamFeed
-                  location="Banderas Bay"
-                  title="Beach & Bay Panorama"
-                  isLive={false}
-                  placeholderImage={beachImage}
+                  location="Los Muertos Beach"
+                  title="Daiquiri Dick's On The Beach"
+                  streamUrl="https://insiderwifi.com/pvfreewifi-beach-cam/"
+                  embedType="iframe"
+                  isLive={true}
                 />
                 <WebcamFeed
-                  location="Marina Area"
-                  title="Marina Vallarta View"
-                  isLive={false}
-                  placeholderImage={beachImage}
+                  location="Weather & Conditions"
+                  title="Windy - Puerto Vallarta"
+                  streamUrl="https://embed.windy.com/embed2.html?lat=20.653&lon=-105.250&zoom=11&overlay=wind&product=ecmwf&menu=&message=&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=default&metricTemp=default"
+                  embedType="iframe"
+                  isLive={true}
                 />
               </div>
 
               <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-md">
                 <p className="text-sm text-blue-900 dark:text-blue-100">
-                  <strong>Live Webcams:</strong> Embedded feeds powered by Panoramablick.com and Windy.com. Additional webcams from Vallarta Shores, Skyline Webcams, PuertoVallarta.net, Villa del Palmar, and Garza Blanca Preserve Resort available via external links.
-                  Live streams update in real-time and show current weather and beach conditions.
+                  <strong>Live Beach Bar Webcams:</strong> Watch Los Muertos Beach come alive! Cuates y Cuetes and Langostinos feature 360° rotating cameras showing beach activity, pier views, and restaurant scenes. 
+                  Daiquiri Dick's offers beachfront views looking south toward Los Arcos rocks. Perfect for checking sunset conditions, beach crowds, and live atmosphere.
+                  Weather widget powered by Windy.com. Additional resort webcams available via external links above.
                 </p>
               </div>
             </div>
