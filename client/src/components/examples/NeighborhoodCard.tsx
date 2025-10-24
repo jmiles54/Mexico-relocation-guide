@@ -1,5 +1,5 @@
 import NeighborhoodCard from '../NeighborhoodCard';
-import zonaImage from '@assets/generated_images/Zona_Romantica_neighborhood_street_d505923a.png';
+import zonaImage from '@assets/stock_images/colorful_street_colo_1e0fdd01.jpg';
 
 export default function NeighborhoodCardExample() {
   return (

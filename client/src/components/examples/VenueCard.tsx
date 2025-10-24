@@ -1,5 +1,5 @@
 import VenueCard from '../VenueCard';
-import wineBarImage from '@assets/generated_images/Expat_wine_bar_scene_f31e2caf.png';
+import wineBarImage from '@assets/stock_images/wine_bar_restaurant__5c42922c.jpg';
 
 export default function VenueCardExample() {
   return (

@@ -11,9 +11,9 @@ import WebcamFeed from "@/components/WebcamFeed";
 import ProximityCalculator from "@/components/ProximityCalculator";
 import MetricCard from "@/components/MetricCard";
 import { DollarSign, Users, Shield, Sun } from "lucide-react";
-import zonaImage from '@assets/generated_images/Zona_Romantica_neighborhood_street_d505923a.png';
-import wineBarImage from '@assets/generated_images/Expat_wine_bar_scene_f31e2caf.png';
-import beachImage from '@assets/generated_images/Puerto_Vallarta_beach_hero_image_a9e31d9a.png';
+import zonaImage from '@assets/stock_images/colorful_street_colo_1e0fdd01.jpg';
+import wineBarImage from '@assets/stock_images/wine_bar_restaurant__5c42922c.jpg';
+import beachImage from '@assets/stock_images/puerto_vallarta_mexi_37c839b6.jpg';
 
 export default function Neighborhood() {
   const [activeTab, setActiveTab] = useState("overview");

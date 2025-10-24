@@ -5,10 +5,10 @@ import { Search, MapPin, DollarSign, Users, TrendingUp } from "lucide-react";
 import { useState } from "react";
 import NeighborhoodCard from "@/components/NeighborhoodCard";
 import MetricCard from "@/components/MetricCard";
-import heroImage from '@assets/generated_images/Puerto_Vallarta_beach_hero_image_a9e31d9a.png';
-import zonaImage from '@assets/generated_images/Zona_Romantica_neighborhood_street_d505923a.png';
-import marinaImage from '@assets/generated_images/Marina_Vallarta_neighborhood_view_e60ff82f.png';
-import meridaImage from '@assets/generated_images/Merida_city_plaza_af911d77.png';
+import heroImage from '@assets/stock_images/puerto_vallarta_mexi_37c839b6.jpg';
+import zonaImage from '@assets/stock_images/colorful_street_colo_1e0fdd01.jpg';
+import marinaImage from '@assets/stock_images/marina_yacht_harbor__9fee4da6.jpg';
+import meridaImage from '@assets/stock_images/merida_mexico_coloni_bffdbd31.jpg';
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");

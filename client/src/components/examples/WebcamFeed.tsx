@@ -1,5 +1,5 @@
 import WebcamFeed from '../WebcamFeed';
-import beachImage from '@assets/generated_images/Puerto_Vallarta_beach_hero_image_a9e31d9a.png';
+import beachImage from '@assets/stock_images/puerto_vallarta_mexi_37c839b6.jpg';
 
 export default function WebcamFeedExample() {
   return (
