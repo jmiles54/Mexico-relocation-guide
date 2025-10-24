@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puerto Vallarta Relocation Guide - Zona Romántica</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #fed7aa 100%);
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            color: #1e40af;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            color: #64748b;
+            font-size: 1.1em;
+        }
+
+        .alert {
+            background: #fef3c7;
+            border: 2px solid #fbbf24;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .alert-icon {
+            font-size: 1.5em;
+        }
+
+        .neighborhood-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #2563eb 0%, #ea580c 100%);
+            color: white;
+            padding: 25px;
+        }
+
+        .card-header h2 {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .card-header .location {
+            opacity: 0.9;
+            font-size: 0.95em;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8fafc;
+            border-bottom: 2px solid #e2e8f0;
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 15px 20px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 0.95em;
+            font-weight: 500;
+            color: #64748b;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            background: #f1f5f9;
+            color: #1e40af;
+        }
+
+        .tab.active {
+            color: #16a34a;
+            background: white;
+            border-bottom-color: #16a34a;
+        }
+
+        .tab-content {
+            padding: 30px;
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .webcam-feed {
+            background: #f1f5f9;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .webcam-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #dc2626;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .live-dot {
+            width: 10px;
+            height: 10px;
+            background: #dc2626;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .video-placeholder {
+            aspect-ratio: 16/9;
+            background: #cbd5e1;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: #64748b;
+        }
+
+        .video-placeholder-icon {
+            font-size: 4em;
+            margin-bottom: 10px;
+        }
+
+        .info-box {
+            background: #dbeafe;
+            border: 2px solid #3b82f6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .info-box h4 {
+            color: #1e40af;
+            margin-bottom: 10px;
+        }
+
+        .info-box ul {
+            margin-left: 20px;
+        }
+
+        .info-box li {
+            color: #1e40af;
+            margin: 5px 0;
+        }
+
+        .weather-card {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        .weather-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .temp-display {
+            font-size: 4em;
+            font-weight: bold;
+        }
+
+        .weather-icon {
+            font-size: 5em;
+        }
+
+        .forecast {
+            display: flex;
+            justify-content: space-between;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .forecast-day {
+            text-align: center;
+            flex: 1;
+        }
+
+        .forecast-day .icon {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .forecast-day .temp {
+            font-weight: 600;
+            color: #1e40af;
+        }
+
+        .forecast-day .day {
+            font-size: 0.85em;
+            color: #64748b;
+            margin-top: 3px;
+        }
+
+        .rental-comparison {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .rental-comparison h4 {
+            font-size: 1.3em;
+            margin-bottom: 15px;
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .price-row.expensive {
+            background: #fee2e2;
+        }
+
+        .price-row.direct {
+            background: #d1fae5;
+            border: 2px solid #10b981;
+            font-weight: 600;
+        }
+
+        .price-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .price-amount {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .savings-box {
+            background: #d1fae5;
+            border: 2px solid #059669;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+
+        .savings-amount {
+            font-size: 2em;
+            font-weight: bold;
+            color: #065f46;
+        }
+
+        .button-nav {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-success {
+            background: #16a34a;
+            color: white;
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1em;
+        }
+
+        .btn-success:hover {
+            background: #15803d;
+        }
+
+        .review-card {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .rating-display {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .rating-number {
+            font-size: 3em;
+            font-weight: bold;
+            color: #1e40af;
+        }
+
+        .stars {
+            color: #fbbf24;
+            font-size: 1.5em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-box {
+            border: 2px solid;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-box.good {
+            background: #d1fae5;
+            border-color: #10b981;
+        }
+
+        .stat-box.warning {
+            background: #fef3c7;
+            border-color: #f59e0b;
+        }
+
+        .stat-box.bad {
+            background: #fee2e2;
+            border-color: #ef4444;
+        }
+
+        .stat-label {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .pros-cons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 15px 0;
+        }
+
+        .pros-cons h5 {
+            font-size: 0.9em;
+            margin-bottom: 8px;
+        }
+
+        .pros-cons ul {
+            margin-left: 0;
+            list-style: none;
+        }
+
+        .pros-cons li {
+            margin: 5px 0;
+            font-size: 0.9em;
+        }
+
+        .market-info {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .market-info h5 {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .price-table {
+            margin: 15px 0;
+        }
+
+        .price-table div {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .success-box {
+            background: #dcfce7;
+            border: 2px solid #16a34a;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .warning-box {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .example-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .example-box {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 1em;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .star-rating {
+            display: flex;
+            gap: 5px;
+            margin-top: 5px;
+        }
+
+        .star-btn {
+            font-size: 2em;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #cbd5e1;
+            transition: color 0.2s;
+        }
+
+        .star-btn:hover,
+        .star-btn.active {
+            color: #fbbf24;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .tabs {
+                font-size: 0.85em;
+            }
+            
+            .tab {
+                padding: 12px 15px;
+            }
+
+            .pros-cons,
+            .example-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .button-nav {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🇲🇽 Puerto Vallarta Relocation Guide</h1>
+            <p class="subtitle">Complete neighborhood analysis with live data, street views, and verified reviews</p>
+            
+            <div class="alert">
+                <div class="alert-icon">⚠️</div>
+                <div>
+                    <strong>Proof of Concept:</strong> This demonstrates how the full portal would work. 
+                    Production version would integrate live APIs (OpenWeatherMap, Google Maps, real webcams) 
+                    and user-submitted reviews. All data shown is sample demonstration data.
+                </div>
+            </div>
+        </div>
+
+        <!-- Neighborhood Card -->
+        <div class="neighborhood-card">
+            <div class="card-header">
+                <h2>Zona Romántica</h2>
+                <p class="location">📍 South of Río Cuale, Beachfront • Puerto Vallarta</p>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('live')">📹 Live Cams</button>
+                <button class="tab" onclick="switchTab('streetview')">🗺️ Street View</button>
+                <button class="tab" onclick="switchTab('weather')">🌤️ Weather</button>
+                <button class="tab" onclick="switchTab('rentals')">🏠 Rentals</button>
+                <button class="tab" onclick="switchTab('building')">🏢 Reviews</button>
+                <button class="tab" onclick="switchTab('local')">🐟 Local</button>
+            </div>
+
+            <!-- Tab 1: Live Webcams -->
+            <div id="live-tab" class="tab-content active">
+                <h3 style="font-size: 1.8em; margin-bottom: 20px;">📹 Live Webcams</h3>
+                
+                <div class="webcam-feed">
+                    <div class="webcam-header">
+                        <div>
+                            <h4 style="font-size: 1.3em;">Los Muertos Beach</h4>
+                            <p style="color: #64748b; font-size: 0.9em;">Available 24/7</p>
+                        </div>
+                        <div class="live-indicator">
+                            <div class="live-dot"></div>
+                            LIVE
+                        </div>
+                    </div>
+                    <div class="video-placeholder">
+                        <div class="video-placeholder-icon">📹</div>
+                        <p>Webcam: Los Muertos Beach</p>
+                        <p style="font-size: 0.85em; color: #94a3b8;">Production: Embedded live stream</p>
+                    </div>
+                </div>
+
+                <div class="webcam-feed">
+                    <div class="webcam-header">
+                        <div>
+                            <h4 style="font-size: 1.3em;">Malecón Promenade</h4>
+                            <p style="color: #64748b; font-size: 0.9em;">Available 24/7</p>
+                        </div>
+                        <div class="live-indicator">
+                            <div class="live-dot"></div>
+                            LIVE
+                        </div>
+                    </div>
+                    <div class="video-placeholder">
+                        <div class="video-placeholder-icon">📹</div>
+                        <p>Webcam: Malecón Promenade</p>
+                        <p style="font-size: 0.85em; color: #94a3b8;">Production: Embedded live stream</p>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <h4>💡 How to Use Live Webcams</h4>
+                    <ul>
+                        <li>Check current weather & beach conditions in real-time</li>
+                        <li>See crowd levels at different times of day</li>
+                        <li>Verify neighborhood activity and safety at night</li>
+                        <li>Compare sunset times vs your home timezone</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Tab 2: Street View -->
+            <div id="streetview-tab" class="tab-content">
+                <h3 style="font-size: 1.8em; margin-bottom: 20px;">🗺️ Google Street View</h3>
+                
+                <div class="webcam-feed">
+                    <div class="video-placeholder">
+                        <div class="video-placeholder-icon">🗺️</div>
+                        <p>Google Street View Explorer</p>
+                        <p style="font-size: 0.85em; color: #94a3b8;">Virtual walk through Zona Romántica</p>
+                        <p style="font-size: 0.75em; color: #94a3b8; margin-top: 10px;">
+                            Production: iframe with Google Maps Street View API<br>
+                            Coordinates: 20.6040, -105.2353
+                        </p>
+                    </div>
+                </div>
+
+                <div class="button-nav">
+                    <button class="btn btn-primary">📍 Main Plaza</button>
+                    <button class="btn btn-primary">🏖️ Beach Access</button>
+                    <button class="btn btn-primary">🛒 Local Market</button>
+                </div>
+
+                <div class="info-box" style="background: #dcfce7; border-color: #16a34a;">
+                    <h4 style="color: #065f46;">✅ What to Look For in Street View</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px;">
+                        <div>
+                            <strong style="color: #065f46;">Safety Indicators:</strong>
+                            <ul style="color: #166534;">
+                                <li>Street lighting quality</li>
+                                <li>Sidewalk conditions</li>
+                                <li>Building maintenance</li>
+                                <li>Active businesses</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <strong style="color: #065f46;">Lifestyle Indicators:</strong>
+                            <ul style="color: #166534;">
+                                <li>Restaurant density</li>
+                                <li>Parks & green spaces</li>
+                                <li>Walkability</li>
+                                <li>Tourist vs local vibe</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3: Weather -->
+            <div id="weather-tab" class="tab-content">
+                <h3 style="font-size: 1.8em; margin-bottom: 20px;">🌤️ Current Weather</h3>
+                
+                <div class="weather-card">
+                    <div class="weather-main">
+                        <div>
+                            <div class="temp-display">26°C</div>
+                            <div style="font-size: 1.3em; margin-top: 10px;">Partly Cloudy</div>
+                            <div style="opacity: 0.9; margin-top: 5px;">Feels like 28°C</div>
+                        </div>
+                        <div class="weather-icon">⛅</div>
+                    </div>
+                    <div style="padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.3);">
+                        <div style="font-size: 0.95em; opacity: 0.9;">Humidity</div>
+                        <div style="font-size: 1.8em; font-weight: bold; margin-top: 5px;">75%</div>
+                    </div>
+                </div>
+
+                <div class="forecast">
+                    <div class="forecast-day">
+                        <div class="icon">☀️</div>
+                        <div class="temp">27°</div>
+                        <div class="day">Mon</div>
+                    </div>
+                    <div class="forecast-day">
+                        <div class="icon">⛅</div>
+                        <div class="temp">26°</div>
+                        <div class="day">Tue</div>
+                    </div>
+                    <div class="forecast-day">
+                        <div class="icon">🌤️</div>
+                        <div class="temp">28°</div>
+                        <div class="day">Wed</div>
+                    </div>
+                    <div class="forecast-day">
+                        <div class="icon">☀️</div>
+                        <div class="temp">29°</div>
+                        <div class="day">Thu</div>
+                    </div>
+                    <div class="forecast-day">
+                        <div class="icon">⛅</div>
+                        <div class="temp">27°</div>
+                        <div class="day">Fri</div>
+                    </div>
+                </div>
+
+                <div class="warning-box">
+                    <h4>📅 Best Time to Visit Puerto Vallarta</h4>
+                    <div style="margin-top: 10px;">
+                        <p><strong>Dry Season:</strong> November - April (Best weather, peak tourist season)</p>
+                        <p style="margin-top: 8px;"><strong>Rainy Season:</strong> June - October (Lower prices, afternoon showers)</p>
+                        <p style="margin-top: 8px;"><strong>Hurricane Risk:</strong> August - October (Monitor forecasts, minimal direct hits)</p>
+                    </div>
+                </div>
+
+                <div style="text-align: center; font-size: 0.85em; color: #64748b; margin-top: 15px;">
+                    Data source: OpenWeatherMap API (free tier) • Updated every 3 hours
+                </div>
+            </div>
+
+            <!-- Tab 4: Rentals -->
+            <div id="rentals-tab" class="tab-content">
+                <h3 style="font-size: 1.8em; margin-bottom: 20px;">🏠 Rental Price Comparison</h3>
+                
+                <div class="warning-box">
+                    <h4>💰 Stop Overpaying for Rentals!</h4>
+                    <p>Airbnb & Vrbo charge 15-25% in service fees. Learn how to contact owners directly and save hundreds per month.</p>
+                </div>
+
+                <div class="rental-comparison">
+                    <h4>Vista del Mar 2BR Condo</h4>
+                    <p style="color: #64748b; font-size: 0.9em; margin-bottom: 15px;">📍 Beachfront, Zona Romántica</p>
+                    
+                    <div class="price-row expensive">
+                        <div class="price-label">
+                            <span>Airbnb:</span>
+                            <span style="font-size: 0.85em; color: #64748b;">$1,200 + $180 fees</span>
+                        </div>
+                        <div class="price-amount">$1,380/mo</div>
+                    </div>
+
+                    <div class="price-row expensive">
+                        <div class="price-label">
+                            <span>Vrbo:</span>
+                            <span style="font-size: 0.85em; color: #64748b;">$1,150 + $160 fees</span>
+                        </div>
+                        <div class="price-amount">$1,310/mo</div>
+                    </div>
+
+                    <div class="price-row direct">
+                        <div class="price-label">
+                            <span>🎯 Direct Contact:</span>
+                            <span style="font-size: 0.85em;">Facebook Groups</span>
+                        </div>
+                        <div class="price-amount" style="color: #065f46;">$950/mo</div>
+                    </div>
+
+                    <div class="savings-box">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 600; color: #065f46;">💵 Your Monthly Savings:</span>
+                            <span class="savings-amount">$430</span>
+                        </div>
+                        <p style="font-size: 0.9em; color: #065f46; margin-top: 8px;">
+                            That's <strong>$5,160/year</strong> saved!
+                        </p>
+                    </div>
+                </div>
+
+                <div class="rental-comparison">
+                    <h4>Beach View Studio</h4>
+                    <p style="color: #64748b; font-size: 0.9em; margin-bottom: 15px;">📍 Walking distance to beach</p>
+                    
+                    <div class="price-row expensive">
+                        <div class="price-label">
+                            <span>Airbnb:</span>
+                            <span style="font-size: 0.85em; color: #64748b;">$850 + $130 fees</span>
+                        </div>
+                        <div class="price-amount">$980/mo</div>
+                    </div>
+
+                    <div class="price-row direct">
+                        <div class="price-label">
+                            <span>🎯 Direct Contact:</span>
+                            <span style="font-size: 0.85em;">WhatsApp owner</span>
+                        </div>
+                        <div class="price-amount" style="color: #065f46;">$700/mo</div>
+                    </div>
+
+                    <div class="savings-box">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 600; color: #065f46;">💵 Your Monthly Savings:</span>
+                            <span class="savings-amount">$280</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <h4>🔍 How to Find Direct Rentals</h4>
+                    <ol style="margin-left: 20px; margin-top: 10px;">
+                        <li>Search Airbnb/Vrbo for properties you like (use as photo catalog)</li>
+                        <li>Screenshot the property name and location</li>
+                        <li>Search Facebook for "Puerto Vallarta rentals" or "Zona Romántica rentals"</li>
+                        <li>Google the property name + "Puerto Vallarta"</li>
+                        <li>Contact owner directly via WhatsApp or email</li>
+                        <li>Negotiate in Spanish for best price (or use Google Translate)</li>
+                    </ol>
+                </div>
+
+                <div style="text-align: center; font-size: 0.85em; color: #64748b; margin-top: 15px;">
+                    Prices updated: October 2025 • Based on user submissions and manual research
+                </div>
+            </div>
+
+            <!-- Tab 5: Building Reviews -->
+            <div id="building-tab" class="tab-content">
+                <h3 style="font-size: 1.8em; margin-bottom: 20px;">🏢 Building & Landlord Reviews</h3>
+                
+                <div style="background: #fee2e2; border: 2px solid #dc2626; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                    <div style="display: flex; gap: 15px;">
+                        <div style="font-size: 2em;">⚠️</div>
+                        <div>
+                            <h4 style="color: #991b1b; margin-bottom: 8px;">Why This Matters</h4>
+                            <p style="color: #991b1b; font-size: 0.95em;">
+                                Bad landlords can ruin your Mexico experience. Deposit theft, slow repairs, 
+                                and surprise fees are common. These reviews help you avoid scams and find trustworthy properties.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background: linear-gradient(135deg, #dbeafe 0%, #d1fae5 100%); border: 2px solid #3b82f6; border-radius: 12px; padding: 30px; margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="rating-display">
+                            <div class="rating-number">4.2</div>
+                            <div>
+                                <div class="stars">★★★★☆</div>
+                                <div style="font-size: 0.9em; color: #64748b; margin-top: 5px;">Based on 8 verified reviews</div>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 0.9em; color: #64748b;">Neighborhood Average</div>
+                            <div style="font-size: 1.2em; font-weight: 600; color: #1e40af;">Zona Romántica</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h4 style="font-size: 1.3em; margin-bottom: 15px;">📊 What Renters Say</h4>
+                <div class="stats-grid">
+                    <div class="stat-box good">
+                        <div class="stat-label">✓ Quick Repairs</div>
+                        <div class="stat-value">87%</div>
+                        <div style="font-size: 0.85em; color: #065f46;">positive</div>
+                    </div>
+                    <div class="stat-box good">
+                        <div class="stat-label">✓ Fair Deposits</div>
+                        <div class="stat-value">75%</div>
+                        <div style="font-size: 0.85em; color: #065f46;">positive</div>
+                    </div>
+                    <div class="stat-box warning">
+                        <div class="stat-label">⚠ Quiet Environment</div>
+                        <div class="stat-value">38%</div>
+                        <div style="font-size: 0.85em; color: #92400e;">positive</div>
+                    </div>
+                    <div class="stat-box good">
+                        <div class="stat-label">✓ English Spoken</div>
+                        <div class="stat-value">63%</div>
+                        <div style="font-size: 0.85em; color: #065f46;">positive</div>
+                    </div>
+                    <div class="stat-box good">
+                        <div class="stat-label">✓ Good Security</div>
+                        <div class="stat-value">92%</div>
+                        <div style="font-size: 0.85em; color: #065f46;">positive</div>
+                    </div>
+                </div>
+
+                <h4 style="font-size: 1.3em; margin: 25px 0 15px;">💬 Recent Reviews</h4>
+
+                <div class="review-card">
+                    <div class="review-header">
+                        <div>
+                            <h5 style="font-size: 1.2em; font-weight: 600;">Vista del Mar Condos</h5>
+                            <p style="font-size: 0.85em; color: #64748b; margin-top: 3px;">Lived 18 months • October 2025</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 1.5em; color: #fbbf24;">★★★★★</div>
+                            <div style="font-weight: 600; margin-top: 3px;">5/5</div>
+                        </div>
+                    </div>
+
+                    <p style="font-style: italic; color: #475569; margin-bottom: 15px;">
+                        "Lived here for 1.5 years. Owner Miguel was excellent - fixed everything within 24 hours. 
+                        Only complaint is weekend noise from nearby bars, but that's the neighborhood, not the building."
+                    </p>
+
+                    <div class="pros-cons">
+                        <div>
+                            <h5 style="color: #059669;">Pros:</h5>
+                            <ul>
+                                <li style="color: #047857;">✓ Responsive landlord</li>
+                                <li style="color: #047857;">✓ Great location</li>
+                                <li style="color: #047857;">✓ Clean building</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h5 style="color: #dc2626;">Cons:</h5>
+                            <ul>
+                                <li style="color: #b91c1c;">✗ Street noise on weekends</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #e5e7eb;">
+                        <span style="color: #059669; font-weight: 600; font-size: 0.9em;">✓ Would rent here again</span>
+                    </div>
+                </div>
+
+                <div class="review-card">
+                    <div class="review-header">
+                        <div>
+                            <h5 style="font-size: 1.2em; font-weight: 600;">Playa Apartments</h5>
+                            <p style="font-size: 0.85em; color: #64748b; margin-top: 3px;">Lived 6 months • September 2025</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 1.5em; color: #fbbf24;">★★★☆☆</div>
+                            <div style="font-weight: 600; margin-top: 3px;">3/5</div>
+                        </div>
+                    </div>
+
+                    <p style="font-style: italic; color: #475569; margin-bottom: 15px;">
+                        "Location is perfect but landlord took 2 months to return deposit, claiming damages that weren't there. 
+                        Get everything in writing and take photos."
+                    </p>
+
+                    <div class="pros-cons">
+                        <div>
+                            <h5 style="color: #059669;">Pros:</h5>
+                            <ul>
+                                <li style="color: #047857;">✓ Good location</li>
+                                <li style="color: #047857;">✓ Affordable</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h5 style="color: #dc2626;">Cons:</h5>
+                            <ul>
+                                <li style="color: #b91c1c;">✗ Slow repairs</li>
+                                <li style="color: #b91c1c;">✗ Deposit disputes</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #e5e7eb;">
+                        <span style="color: #dc2626; font-weight: 600; font-size: 0.9em;">✗ Would NOT rent here again</span>
+                    </div>
+                </div>
+
+                <div class="review-card">
+                    <div class="review-header">
+                        <div>
+                            <h5 style="font-size: 1.2em; font-weight: 600;">Casa Romantica</h5>
+                            <p style="font-size: 0.85em; color: #64748b; margin-top: 3px;">Lived 12 months • October 2025</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 1.5em; color: #fbbf24;">★★★★★</div>
+                            <div style="font-weight: 600; margin-top: 3px;">5/5</div>
+                        </div>
+                    </div>
+
+                    <p style="font-style: italic; color: #475569; margin-bottom: 15px;">
+                        "Best rental experience in Mexico. Owner Maria speaks perfect English, very fair with deposit, 
+                        building is spotless. Highly recommend."
+                    </p>
+
+                    <div class="pros-cons">
+                        <div>
+                            <h5 style="color: #059669;">Pros:</h5>
+                            <ul>
+                                <li style="color: #047857;">✓ Honest owner</li>
+                                <li style="color: #047857;">✓ Well maintained</li>
+                                <li style="color: #047857;">✓ Pet friendly</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h5 style="color: #dc2626;">Cons:</h5>
+                            <ul>
+                                <li style="color: #64748b;">None reported</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #e5e7eb;">
+                        <span style="color: #059669; font-weight: 600; font-size: 0.9em;">✓ Would rent here again</span>
+                    </div>
+                </div>
+
+                <button class="btn btn-success" onclick="alert('Review submission form would open here in production version')">
+                    ⭐ Submit Your Building/Landlord Review
+                </button>
+
+                <p style="text-align: center; font-size: 0.85em; color: #64748b; margin-top: 10px;">
+                    Help future renters avoid scams. All reviews are verified before publishing.
+                </p>
+
+                <div class="success-box" style="margin-top: 25px;">
+                    <h4 style="color: #065f46; margin-bottom: 10px;">🛡️ Why These Reviews Matter</h4>
+                    <div style="color: #166534; font-size: 0.95em;">
+                        <p><strong>• Avoid deposit scams:</strong> See which landlords return deposits fairly</p>
+                        <p style="margin-top: 6px;"><strong>• Real repair times:</strong> Know if AC breaks in summer, how fast is it fixed?</p>
+                        <p style="margin-top: 6px;"><strong>• Language barriers:</strong> Find English-speaking landlords</p>
+                        <p style="margin-top: 6px;"><strong>• Hidden costs:</strong> Learn about surprise fees before signing</p>
+                        <p style="margin-top: 6px;"><strong>• Noise reality:</strong> Is "quiet neighborhood" actually quiet?</p>
+                    </div>
+                </div>
+
+                <div class="warning-box" style="text-align: center; margin-top: 20px;">
+                    <div style="font-size: 2em; margin-bottom: 10px;">🎯</div>
+                    <h4 style="color: #92400e; margin-bottom: 10px;">Premium Feature Coming Soon</h4>
+                    <p style="color: #78350f; font-size: 0.95em; margin-bottom: 15px;">
+                        Search buildings by rating • Filter by "zero deposit disputes" • Compare landlords side-by-side
+                    </p>
+                    <button class="btn" style="background: #f59e0b; color: white; padding: 12px 30px; font-weight: 600;">
+                        Get Early Access
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab 6: Local Guide -->
+            <div id="local-tab" class="tab-content">
+                <h3 style="font-size: 1.8em; margin-bottom: 20px;">🐟 Local Seafood Guide</h3>
+                
+                <div class="info-box">
+                    <h4 style="color: #1e40af;">🎣 Fresh Off the Boat</h4>
+                    <p style="color: #1e40af; margin-top: 8px;">
+                        Buy directly from fishermen and save 50-70% vs restaurants. Here's where locals shop:
+                    </p>
+                </div>
+
+                <h4 style="font-size: 1.3em; margin: 20px 0 15px;">Fish Markets</h4>
+                
+                <div class="market-info">
+                    <h5>Mercado Emiliano Zapata</h5>
+                    <p style="color: #64748b; font-size: 0.9em; margin: 8px 0;">📍 5 minute walk from Zona Romántica center</p>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 15px 0;">
+                        <div>
+                            <div style="font-weight: 600; margin-bottom: 5px;">Hours:</div>
+                            <div>6am - 2pm daily</div>
+                        </div>
+                        <div>
+                            <div style="font-weight: 600; margin-bottom: 5px;">Typical Prices (MXN/kg):</div>
+                            <div class="price-table">
+                                <div><span>Fresh fish:</span><span>180-220</span></div>
+                                <div><span>Shrimp:</span><span>200-250</span></div>
+                                <div><span>Octopus:</span><span>160-200</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="success-box">
+                        <strong>💡 Pro tip:</strong> Go early for best selection. Prices negotiable if buying bulk. 
+                        Bring your own bag and cooler with ice.
+                    </div>
+                </div>
+
+                <h4 style="font-size: 1.3em; margin: 25px 0 15px;">Cook-Your-Catch Restaurants</h4>
+                <p style="color: #64748b; margin-bottom: 15px;">
+                    Bring your fresh-caught or market-bought fish and these restaurants will prepare it for you:
+                </p>
+
+                <div class="market-info" style="background: #fff7ed; border-color: #fb923c;">
+                    <h5>Mariscos 8 Tostadas</h5>
+                    <p style="color: #64748b; font-size: 0.9em; margin: 8px 0;">📍 Walking distance in Zona Romántica</p>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 15px 0;">
+                        <div>
+                            <div style="font-weight: 600; font-size: 0.9em; color: #ea580c; margin-bottom: 5px;">Cooking Fee:</div>
+                            <div style="font-size: 1.2em; font-weight: 600;">80-120 MXN</div>
+                        </div>
+                        <div>
+                            <div style="font-weight: 600; font-size: 0.9em; color: #ea580c; margin-bottom: 5px;">Includes:</div>
+                            <div style="font-size: 0.95em;">Rice, beans, tortillas, salad</div>
+                        </div>
+                        <div>
+                            <div style="font-weight: 600; font-size: 0.9em; color: #ea580c; margin-bottom: 5px;">Pro Tip:</div>
+                            <div style="font-size: 0.95em;">Call ahead, bring fish in cooler</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background: linear-gradient(135deg, #f3e8ff 0%, #dbeafe 100%); border: 2px solid #a855f7; border-radius: 8px; padding: 20px; margin: 25px 0;">
+                    <h4 style="color: #7e22ce; margin-bottom: 15px;">🍽️ Example Savings</h4>
+                    <div class="example-grid">
+                        <div class="example-box" style="border: 2px solid #fca5a5;">
+                            <div style="font-weight: 600; color: #dc2626; margin-bottom: 10px;">Restaurant Price:</div>
+                            <div style="margin: 8px 0;">Grilled dorado: <strong>320 MXN</strong></div>
+                            <div>Garlic shrimp: <strong>280 MXN</strong></div>
+                        </div>
+                        <div class="example-box" style="border: 2px solid #86efac;">
+                            <div style="font-weight: 600; color: #16a34a; margin-bottom: 10px;">Buy + Cook Price:</div>
+                            <div style="margin: 8px 0;">Dorado (800g): <strong>140 MXN</strong></div>
+                            <div>Cooking fee: <strong>100 MXN</strong></div>
+                            <div style="padding-top: 8px; margin-top: 8px; border-top: 2px solid #86efac; font-weight: 600;">
+                                Total: 240 MXN
+                            </div>
+                            <div style="color: #16a34a; font-weight: 600; margin-top: 5px;">💰 Save 80 MXN (25%)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="warning-box">
+                    <h4 style="color: #92400e; margin-bottom: 10px;">⚠️ Important Tips</h4>
+                    <ul style="margin-left: 20px; color: #78350f;">
+                        <li>Bring fish in a cooler with ice</li>
+                        <li>Call ahead to confirm they accept outside fish</li>
+                        <li>Best during lunch hours (comida time 1-3pm)</li>
+                        <li>Cash is preferred at most local spots</li>
+                        <li>Basic Spanish very helpful (or use Google Translate)</li>
+                    </ul>
+                </div>
+
+                <div class="success-box" style="margin-top: 20px;">
+                    <h4 style="color: #065f46; margin-bottom: 10px;">🌮 More Local Money-Saving Tips</h4>
+                    <p style="color: #166534; margin-bottom: 8px;">
+                        <strong>Street tacos:</strong> 15-25 MXN each (vs 80-120 MXN in tourist restaurants)
+                    </p>
+                    <p style="color: #166534; margin-bottom: 8px;">
+                        <strong>Local markets:</strong> Produce 50-70% cheaper than supermarkets
+                    </p>
+                    <p style="color: #166534;">
+                        <strong>Comida corrida:</strong> Full lunch (soup, main, drink, dessert) for 80-120 MXN
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tabName) {
+            // Hide all tabs
+            const allTabs = document.querySelectorAll('.tab-content');
+            allTabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Remove active class from all tab buttons
+            const allButtons = document.querySelectorAll('.tab');
+            allButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // Show selected tab
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+
+        // Star rating interaction (for demo)
+        const starButtons = document.querySelectorAll('.star-btn');
+        starButtons.forEach((btn, index) => {
+            btn.addEventListener('click', () => {
+                starButtons.forEach((s, i) => {
+                    if (i <= index) {
+                        s.classList.add('active');
+                        s.textContent = '★';
+                    } else {
+                        s.classList.remove('active');
+                        s.textContent = '☆';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
