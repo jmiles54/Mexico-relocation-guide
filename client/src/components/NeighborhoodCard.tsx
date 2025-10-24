@@ -3,11 +3,13 @@ import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { MapPin, DollarSign, Users, Footprints, Info, Waves } from "lucide-react";
 import { Link } from "wouter";
+import RotatingQuotes from "./RotatingQuotes";
 
 interface NeighborhoodCardProps {
   name: string;
   city: string;
-  image: string;
+  image?: string;
+  webcamUrl?: string;
   affordabilityScore: number;
   rentPrice: string;
   expatRating: number;
@@ -19,6 +21,7 @@ export default function NeighborhoodCard({
   name,
   city,
   image,
+  webcamUrl,
   affordabilityScore,
   rentPrice,
   expatRating,
@@ -35,11 +38,23 @@ export default function NeighborhoodCard({
     <Link href="/neighborhood/zona-romantica">
       <Card className="overflow-hidden hover-elevate cursor-pointer transition-all" data-testid={`card-neighborhood-${name.toLowerCase().replace(/\s+/g, '-')}`}>
         <div className="relative h-48 overflow-hidden">
-          <img
-            src={image}
-            alt={name}
-            className="w-full h-full object-cover"
-          />
+          {webcamUrl ? (
+            <>
+              <iframe
+                src={webcamUrl}
+                className="w-full h-full border-0 pointer-events-none"
+                title={`${name} Live Webcam`}
+                allow="autoplay"
+              />
+              <RotatingQuotes />
+            </>
+          ) : (
+            <img
+              src={image}
+              alt={name}
+              className="w-full h-full object-cover"
+            />
+          )}
           <div className="absolute top-3 right-3">
             <Badge className={`${getAffordabilityColor(affordabilityScore)} border`}>
               Score: {affordabilityScore}

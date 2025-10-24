@@ -371,9 +371,9 @@ export default function Neighborhood() {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <WebcamFeed
-                  location="Los Muertos Beach Pier"
-                  title="Daiquiri Dick's Beach Bar - Live Stream"
-                  streamUrl="https://insiderwifi.com/pvfreewifi-beach-cam/"
+                  location="Los Muertos Beach South"
+                  title="Vallarta Shores - Live Beach Webcam"
+                  streamUrl="https://vallartashores.com/live-vallarta-webcam/"
                   embedType="iframe"
                   isLive={true}
                 />
@@ -433,31 +433,21 @@ export default function Neighborhood() {
                     </div>
                   </CardContent>
                 </Card>
-                <WebcamFeed
-                  location="Los Muertos Beach South"
-                  title="Vallarta Shores - Seahorse Statue View"
-                  streamUrl="https://vallartashores.com/live-vallarta-webcam/"
-                  embedType="iframe"
-                  isLive={true}
-                />
-                <WebcamFeed
-                  location="Banderas Bay Resort"
-                  title="Villa del Palmar - Beach & Pool Views"
-                  streamUrl="https://vallarta.villadelpalmar.com/live-cam"
-                  embedType="iframe"
-                  isLive={true}
-                />
+                <Card className="overflow-hidden col-span-1 md:col-span-2" data-testid="webcam-info">
+                  <CardContent className="p-6">
+                    <h4 className="font-semibold mb-2 flex items-center gap-2">
+                      <Video className="w-5 h-5 text-primary" />
+                      About These Webcams
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      <strong>Vallarta Shores</strong> shows Los Muertos Beach with the iconic Seahorse statue, perfect for checking current beach conditions and sunset timing.
+                      <strong> Grand Park Royal</strong> features a PTZ (pan-tilt-zoom) camera that moves throughout the day, showing dynamic views of the beach, pool areas, and Banderas Bay.
+                      Both streams use direct RTSP/HLS protocols rather than YouTube infrastructure.
+                    </p>
+                  </CardContent>
+                </Card>
               </div>
 
-              <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-md">
-                <p className="text-sm text-blue-900 dark:text-blue-100">
-                  <strong>Live Streaming Webcams:</strong> Puerto Vallarta uses direct streaming protocols (RTSP/HLS) rather than YouTube infrastructure. 
-                  <strong>Daiquiri Dick's</strong> streams 9am-midnight daily with high-quality beach views. 
-                  <strong>Grand Park Royal</strong> features a PTZ (pan-tilt-zoom) camera showing dynamic beach and pool scenes.
-                  <strong>Vallarta Shores</strong> and <strong>Villa del Palmar</strong> provide resort and beach views.
-                  Additional 360° rotating cameras at Langostinos and Cuates y Cuetes available via external links.
-                </p>
-              </div>
             </div>
           </TabsContent>
 
