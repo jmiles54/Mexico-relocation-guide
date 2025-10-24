@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MapPin, ArrowLeft, Waves, Users, Coffee, DollarSign, Shield, Sun, Video, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "wouter";
 import WeatherWidget from "@/components/WeatherWidget";
 import CostBreakdown from "@/components/CostBreakdown";
 import VenueCard from "@/components/VenueCard";
@@ -152,9 +153,11 @@ export default function Neighborhood() {
       {/* Header with breadcrumb */}
       <div className="border-b bg-card">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <Button variant="ghost" size="sm" className="mb-2" data-testid="button-back">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Puerto Vallarta
+          <Button variant="ghost" size="sm" className="mb-2" data-testid="button-back" asChild>
+            <Link href="/">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Puerto Vallarta
+            </Link>
           </Button>
           <div className="flex items-start justify-between">
             <div>

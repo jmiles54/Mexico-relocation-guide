@@ -57,21 +57,22 @@ export default function WebcamFeed({
           </div>
         </div>
         
-        <div className="aspect-video bg-slate-200 relative overflow-hidden">
+        <div className="aspect-video bg-slate-200 dark:bg-slate-800 relative overflow-hidden">
           {streamUrl && embedType === "iframe" ? (
             <iframe
               key={key}
               src={streamUrl}
-              className="w-full h-full"
-              allow="autoplay; fullscreen"
+              className="w-full h-full border-0"
+              allow="autoplay; fullscreen; accelerometer; gyroscope; picture-in-picture"
               allowFullScreen
               title={title}
-              loading="lazy"
+              loading="eager"
+              sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
             />
           ) : placeholderImage ? (
             <img src={placeholderImage} alt={title} className="w-full h-full object-cover" />
           ) : (
-            <div className="flex items-center justify-center h-full bg-slate-100">
+            <div className="flex items-center justify-center h-full bg-slate-100 dark:bg-slate-900">
               <div className="text-center">
                 <Video className="w-16 h-16 mx-auto mb-2 text-slate-400" />
                 <p className="text-sm text-slate-500">Webcam feed placeholder</p>

@@ -42,14 +42,14 @@ export default function RotatingQuotes() {
   const quote = expatQuotes[currentIndex];
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent p-4 text-white">
+    <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/70 via-black/50 to-transparent p-3 text-white">
       <div className="flex items-start gap-2">
-        <Quote className="w-4 h-4 mt-1 flex-shrink-0 opacity-70" />
+        <Quote className="w-3 h-3 mt-0.5 flex-shrink-0 opacity-70" />
         <div className="flex-1 min-w-0">
-          <p className="text-sm italic line-clamp-2 mb-1">
+          <p className="text-xs italic line-clamp-1 mb-0.5">
             "{quote.text}"
           </p>
-          <p className="text-xs opacity-80">
+          <p className="text-[10px] opacity-70">
             — {quote.author}
           </p>
         </div>

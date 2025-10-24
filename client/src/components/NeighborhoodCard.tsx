@@ -37,29 +37,38 @@ export default function NeighborhoodCard({
   return (
     <Link href="/neighborhood/zona-romantica">
       <Card className="overflow-hidden hover-elevate cursor-pointer transition-all" data-testid={`card-neighborhood-${name.toLowerCase().replace(/\s+/g, '-')}`}>
-        <div className="relative h-48 overflow-hidden">
+        <div className="relative h-48 overflow-visible">
           {webcamUrl ? (
-            <>
+            <div className="relative h-48 overflow-hidden">
               <iframe
                 src={webcamUrl}
                 className="w-full h-full border-0 pointer-events-none"
                 title={`${name} Live Webcam`}
-                allow="autoplay"
+                allow="autoplay; accelerometer; gyroscope; picture-in-picture"
+                loading="eager"
+                sandbox="allow-scripts allow-same-origin"
               />
               <RotatingQuotes />
-            </>
+              <div className="absolute top-3 right-3 z-10">
+                <Badge className={`${getAffordabilityColor(affordabilityScore)} border`}>
+                  Score: {affordabilityScore}
+                </Badge>
+              </div>
+            </div>
           ) : (
-            <img
-              src={image}
-              alt={name}
-              className="w-full h-full object-cover"
-            />
+            <>
+              <img
+                src={image}
+                alt={name}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute top-3 right-3">
+                <Badge className={`${getAffordabilityColor(affordabilityScore)} border`}>
+                  Score: {affordabilityScore}
+                </Badge>
+              </div>
+            </>
           )}
-          <div className="absolute top-3 right-3">
-            <Badge className={`${getAffordabilityColor(affordabilityScore)} border`}>
-              Score: {affordabilityScore}
-            </Badge>
-          </div>
         </div>
         <CardContent className="p-4">
           <div className="mb-3">
