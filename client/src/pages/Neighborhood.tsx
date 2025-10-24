@@ -371,16 +371,16 @@ export default function Neighborhood() {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <WebcamFeed
-                  location="Los Muertos Beach"
-                  title="Cuates y Cuetes Beach Bar - 360° View"
-                  streamUrl="http://www.cuatesycuetes.com/en/index.php/webcam"
+                  location="Los Muertos Beach Pier"
+                  title="Daiquiri Dick's Beach Bar - Live Stream"
+                  streamUrl="https://insiderwifi.com/pvfreewifi-beach-cam/"
                   embedType="iframe"
                   isLive={true}
                 />
                 <WebcamFeed
-                  location="Los Muertos Beach"
-                  title="Langostinos Restaurant - HD Beach Cam"
-                  streamUrl="https://langostinos.click2stream.com/"
+                  location="Hotel Zone Beach"
+                  title="Grand Park Royal - PTZ Beach Cam"
+                  streamUrl="https://www.puertovallarta.net/interactive/large-webcam/"
                   embedType="iframe"
                   isLive={true}
                 />
@@ -397,44 +397,53 @@ export default function Neighborhood() {
                       <Button
                         variant="outline"
                         className="w-full justify-start"
-                        onClick={() => window.open('https://vallartashores.com/live-vallarta-webcam/', '_blank')}
-                        data-testid="button-vallarta-shores-webcam"
+                        onClick={() => window.open('https://langostinos.click2stream.com/', '_blank')}
+                        data-testid="button-langostinos-webcam"
                       >
                         <ExternalLink className="w-4 h-4 mr-2" />
-                        Vallarta Shores - Los Muertos Beach
+                        Langostinos - 360° HD Beach Cam
                       </Button>
                       <Button
                         variant="outline"
                         className="w-full justify-start"
-                        onClick={() => window.open('https://www.skylinewebcams.com/en/webcam/mexico/jalisco/puerto-vallarta/puerto-vallarta.html', '_blank')}
-                        data-testid="button-skyline-webcam"
+                        onClick={() => window.open('http://www.cuatesycuetes.com/en/index.php/webcam', '_blank')}
+                        data-testid="button-cuates-webcam"
                       >
                         <ExternalLink className="w-4 h-4 mr-2" />
-                        Skyline Webcams - Hyatt Ziva Beach
+                        Cuates y Cuetes - Los Muertos Pier
                       </Button>
                       <Button
                         variant="outline"
                         className="w-full justify-start"
-                        onClick={() => window.open('https://www.puertovallarta.net/interactive/large-webcam/', '_blank')}
-                        data-testid="button-puertovallarta-webcam"
+                        onClick={() => window.open('https://puertovallarta.garzablancaresort.com/live-webcam', '_blank')}
+                        data-testid="button-garza-blanca-webcam"
                       >
                         <ExternalLink className="w-4 h-4 mr-2" />
-                        PuertoVallarta.net - Multiple Views
+                        Garza Blanca - Luxury Resort Views
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start"
+                        onClick={() => window.open('https://embed.windy.com/embed2.html?lat=20.653&lon=-105.250&zoom=11', '_blank')}
+                        data-testid="button-windy-webcam"
+                      >
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        Windy - Live Weather Conditions
                       </Button>
                     </div>
                   </CardContent>
                 </Card>
                 <WebcamFeed
-                  location="Los Muertos Beach"
-                  title="Daiquiri Dick's On The Beach"
-                  streamUrl="https://insiderwifi.com/pvfreewifi-beach-cam/"
+                  location="Los Muertos Beach South"
+                  title="Vallarta Shores - Seahorse Statue View"
+                  streamUrl="https://vallartashores.com/live-vallarta-webcam/"
                   embedType="iframe"
                   isLive={true}
                 />
                 <WebcamFeed
-                  location="Weather & Conditions"
-                  title="Windy - Puerto Vallarta"
-                  streamUrl="https://embed.windy.com/embed2.html?lat=20.653&lon=-105.250&zoom=11&overlay=wind&product=ecmwf&menu=&message=&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=default&metricTemp=default"
+                  location="Banderas Bay Resort"
+                  title="Villa del Palmar - Beach & Pool Views"
+                  streamUrl="https://vallarta.villadelpalmar.com/live-cam"
                   embedType="iframe"
                   isLive={true}
                 />
@@ -442,9 +451,11 @@ export default function Neighborhood() {
 
               <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-md">
                 <p className="text-sm text-blue-900 dark:text-blue-100">
-                  <strong>Live Beach Bar Webcams:</strong> Watch Los Muertos Beach come alive! Cuates y Cuetes and Langostinos feature 360° rotating cameras showing beach activity, pier views, and restaurant scenes. 
-                  Daiquiri Dick's offers beachfront views looking south toward Los Arcos rocks. Perfect for checking sunset conditions, beach crowds, and live atmosphere.
-                  Weather widget powered by Windy.com. Additional resort webcams available via external links above.
+                  <strong>Live Streaming Webcams:</strong> Puerto Vallarta uses direct streaming protocols (RTSP/HLS) rather than YouTube infrastructure. 
+                  <strong>Daiquiri Dick's</strong> streams 9am-midnight daily with high-quality beach views. 
+                  <strong>Grand Park Royal</strong> features a PTZ (pan-tilt-zoom) camera showing dynamic beach and pool scenes.
+                  <strong>Vallarta Shores</strong> and <strong>Villa del Palmar</strong> provide resort and beach views.
+                  Additional 360° rotating cameras at Langostinos and Cuates y Cuetes available via external links.
                 </p>
               </div>
             </div>
