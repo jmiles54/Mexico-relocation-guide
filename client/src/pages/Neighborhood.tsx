@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, ArrowLeft } from "lucide-react";
+import { MapPin, ArrowLeft, Waves, Users, Coffee, DollarSign, Shield, Sun, Video, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import WeatherWidget from "@/components/WeatherWidget";
 import CostBreakdown from "@/components/CostBreakdown";
@@ -10,7 +10,7 @@ import VenueCard from "@/components/VenueCard";
 import WebcamFeed from "@/components/WebcamFeed";
 import ProximityCalculator from "@/components/ProximityCalculator";
 import MetricCard from "@/components/MetricCard";
-import { DollarSign, Users, Shield, Sun } from "lucide-react";
+import MapView from "@/components/MapView";
 import zonaImage from '@assets/stock_images/colorful_street_colo_1e0fdd01.jpg';
 import wineBarImage from '@assets/stock_images/wine_bar_restaurant__5c42922c.jpg';
 import beachImage from '@assets/stock_images/puerto_vallarta_mexi_37c839b6.jpg';
@@ -120,6 +120,33 @@ export default function Neighborhood() {
     }
   ];
 
+  const mapVenues = [
+    { id: 1, name: "Elixir Wine Bar", type: "wine-bar" as const, lat: 20.6053, lng: -105.2357 },
+    { id: 2, name: "La Copa Wine Bar", type: "wine-bar" as const, lat: 20.6048, lng: -105.2365 },
+    { id: 3, name: "A Page in the Sun", type: "cafe" as const, lat: 20.6061, lng: -105.2370 },
+    { id: 4, name: "Playa Olas Altas", type: "beach" as const, lat: 20.6065, lng: -105.2385 },
+    { id: 5, name: "Los Muertos Pier", type: "beach" as const, lat: 20.6055, lng: -105.2380 },
+    { id: 6, name: "Los Arcos", type: "charco" as const, lat: 20.5945, lng: -105.2650 }
+  ];
+
+  const zonaRomanticaBoundary = {
+    type: "Feature" as const,
+    geometry: {
+      type: "Polygon" as const,
+      coordinates: [[
+        [-105.2400, 20.6100],
+        [-105.2300, 20.6100],
+        [-105.2300, 20.6000],
+        [-105.2400, 20.6000],
+        [-105.2400, 20.6100]
+      ]]
+    },
+    properties: {
+      name: "Zona Romántica",
+      color: "#3b82f6"
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header with breadcrumb */}
@@ -137,10 +164,10 @@ export default function Neighborhood() {
                 <span>Puerto Vallarta, Jalisco</span>
               </div>
               <div className="flex gap-2">
-                <Badge className="bg-green-100 text-green-800 border-green-300">
+                <Badge variant="outline">
                   Affordability: 72/100
                 </Badge>
-                <Badge className="bg-blue-100 text-blue-800 border-blue-300">
+                <Badge variant="outline">
                   Expat Friendly: 9/10
                 </Badge>
               </div>
@@ -221,19 +248,28 @@ export default function Neighborhood() {
                   <h3 className="text-xl font-semibold mb-4">Neighborhood Highlights</h3>
                   <div className="space-y-4 text-sm">
                     <div>
-                      <h4 className="font-semibold mb-2">🏖️ Beach Access</h4>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Waves className="w-4 h-4 text-primary" />
+                        <h4 className="font-semibold">Beach Access</h4>
+                      </div>
                       <p className="text-muted-foreground">
                         3-minute walk to Playa Olas Altas. Prime beachfront location with easy access to all coastal activities.
                       </p>
                     </div>
                     <div>
-                      <h4 className="font-semibold mb-2">👥 Expat Community</h4>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Users className="w-4 h-4 text-primary" />
+                        <h4 className="font-semibold">Expat Community</h4>
+                      </div>
                       <p className="text-muted-foreground">
                         Highly active expat scene with 9 weekly meetups, wine bars, and social venues popular with 50+ crowd.
                       </p>
                     </div>
                     <div>
-                      <h4 className="font-semibold mb-2">🍽️ Dining Scene</h4>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Coffee className="w-4 h-4 text-primary" />
+                        <h4 className="font-semibold">Dining Scene</h4>
+                      </div>
                       <p className="text-muted-foreground">
                         Mix of local fondas (90 MXN menu del día) and upscale restaurants. Easy walking to all amenities.
                       </p>
@@ -335,43 +371,91 @@ export default function Neighborhood() {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <WebcamFeed
-                  location="Zona Romántica"
-                  title="Playa Olas Altas Beach"
-                  streamUrl="https://www.youtube.com/embed/qL9kS-u7w_k?autoplay=1&mute=1&controls=0&loop=1&playlist=qL9kS-u7w_k"
+                  location="Puerto Vallarta"
+                  title="Panorama View - Banderas Bay"
+                  streamUrl="https://www.panoramablick.com/embed/29852"
                   embedType="iframe"
                   isLive={true}
                 />
                 <WebcamFeed
-                  location="Downtown"
-                  title="Malecón Boardwalk"
-                  streamUrl="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1&controls=0&loop=1&playlist=dQw4w9WgXcQ"
+                  location="Weather & Conditions"
+                  title="Windy - Puerto Vallarta"
+                  streamUrl="https://embed.windy.com/embed2.html?lat=20.653&lon=-105.250&zoom=11&overlay=wind&product=ecmwf&menu=&message=&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=default&metricTemp=default"
                   embedType="iframe"
                   isLive={true}
                 />
+                <Card className="overflow-hidden" data-testid="webcam-external-links">
+                  <CardContent className="p-6">
+                    <h4 className="font-semibold mb-4 flex items-center gap-2">
+                      <Video className="w-5 h-5 text-primary" />
+                      External Webcam Links
+                    </h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Most Puerto Vallarta webcams cannot be embedded due to security restrictions. Click below to view live feeds in new windows:
+                    </p>
+                    <div className="space-y-2">
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start"
+                        onClick={() => window.open('https://vallartashores.com/live-vallarta-webcam/', '_blank')}
+                        data-testid="button-vallarta-shores-webcam"
+                      >
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        Vallarta Shores - Los Muertos Beach
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start"
+                        onClick={() => window.open('https://www.skylinewebcams.com/en/webcam/mexico/jalisco/puerto-vallarta/puerto-vallarta.html', '_blank')}
+                        data-testid="button-skyline-webcam"
+                      >
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        Skyline Webcams - Hyatt Ziva Beach
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start"
+                        onClick={() => window.open('https://www.puertovallarta.net/interactive/large-webcam/', '_blank')}
+                        data-testid="button-puertovallarta-webcam"
+                      >
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        PuertoVallarta.net - Multiple Views
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
                 <WebcamFeed
-                  location="Marina Vallarta"
-                  title="Marina & Yacht Harbor"
+                  location="Banderas Bay"
+                  title="Beach & Bay Panorama"
                   isLive={false}
                   placeholderImage={beachImage}
                 />
                 <WebcamFeed
-                  location="South Zone"
-                  title="Los Muertos Pier"
-                  isLive={true}
+                  location="Marina Area"
+                  title="Marina Vallarta View"
+                  isLive={false}
                   placeholderImage={beachImage}
                 />
               </div>
 
-              <div className="mt-8 p-4 bg-amber-50 border border-amber-200 rounded-md">
-                <p className="text-sm text-amber-900">
-                  <strong>Note:</strong> Webcam feeds are provided by third-party sources and may be temporarily unavailable. 
-                  Click the external link icon to view the full-screen stream. These are demo feeds - production version will use dedicated Puerto Vallarta webcams from EarthCam, Windy.com, or local tourism boards.
+              <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-md">
+                <p className="text-sm text-blue-900 dark:text-blue-100">
+                  <strong>Live Webcams:</strong> Embedded feeds powered by Panoramablick.com and Windy.com. Additional webcams from Vallarta Shores, Skyline Webcams, PuertoVallarta.net, Villa del Palmar, and Garza Blanca Preserve Resort available via external links.
+                  Live streams update in real-time and show current weather and beach conditions.
                 </p>
               </div>
             </div>
           </TabsContent>
 
-          <TabsContent value="proximity">
+          <TabsContent value="proximity" className="space-y-6">
+            <MapView
+              neighborhoodName="Zona Romántica"
+              centerLat={20.6055}
+              centerLng={-105.2365}
+              venues={mapVenues}
+              boundary={zonaRomanticaBoundary}
+            />
+            
             <ProximityCalculator
               neighborhoodName="Zona Romántica"
               items={proximityItems}

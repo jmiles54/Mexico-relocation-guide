@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search } from "lucide-react";
+import { Search, MapPin, Waves } from "lucide-react";
 import { useState } from "react";
 import NeighborhoodCard from "@/components/NeighborhoodCard";
 import heroImage from '@assets/stock_images/puerto_vallarta_mexi_37c839b6.jpg';
@@ -123,6 +123,131 @@ export default function Home() {
           {featuredNeighborhoods.map((neighborhood, index) => (
             <NeighborhoodCard key={index} {...neighborhood} />
           ))}
+        </div>
+      </div>
+
+      {/* Puerto Vallarta vs Sayulita Comparison */}
+      <div className="py-16 bg-secondary/10">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">Puerto Vallarta vs Sayulita</h2>
+            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+              Two popular expat destinations in Nayarit - choose the lifestyle that fits you best
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <Card data-testid="card-comparison-pv">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <MapPin className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="text-2xl font-bold">Puerto Vallarta</h3>
+                </div>
+                
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-semibold mb-2">Best For:</h4>
+                    <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                      <li>Mature expats seeking established community</li>
+                      <li>Those who want urban amenities + beach access</li>
+                      <li>Healthcare access (multiple hospitals)</li>
+                      <li>Year-round international airport access</li>
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-semibold mb-2">Cost of Living:</h4>
+                    <div className="space-y-1 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">1BR Furnished Rent</span>
+                        <span className="font-semibold">6,500-14,000 MXN</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Meal at Restaurant</span>
+                        <span className="font-semibold">90-250 MXN</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Monthly Budget</span>
+                        <span className="font-semibold">25,000-45,000 MXN</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-semibold mb-2">Lifestyle:</h4>
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="outline">Urban Beach Town</Badge>
+                      <Badge variant="outline">Wine Bars</Badge>
+                      <Badge variant="outline">Walkable</Badge>
+                      <Badge variant="outline">Cultural Events</Badge>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card data-testid="card-comparison-sayulita">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Waves className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="text-2xl font-bold">Sayulita</h3>
+                </div>
+                
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-semibold mb-2">Best For:</h4>
+                    <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                      <li>Active expats (surfing, yoga, outdoor life)</li>
+                      <li>Those seeking smaller village vibe</li>
+                      <li>Digital nomads and younger crowd</li>
+                      <li>Beach-centered lifestyle</li>
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-semibold mb-2">Cost of Living:</h4>
+                    <div className="space-y-1 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">1BR Furnished Rent</span>
+                        <span className="font-semibold">12,000-20,000 MXN</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Meal at Restaurant</span>
+                        <span className="font-semibold">120-300 MXN</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Monthly Budget</span>
+                        <span className="font-semibold">30,000-50,000 MXN</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-semibold mb-2">Lifestyle:</h4>
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="outline">Beach Village</Badge>
+                      <Badge variant="outline">Surf Culture</Badge>
+                      <Badge variant="outline">Bohemian</Badge>
+                      <Badge variant="outline">Yoga Studios</Badge>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          
+          <div className="mt-8 text-center">
+            <p className="text-sm text-muted-foreground mb-4">
+              Both destinations are ~45 minutes apart by car. Many expats split time between both locations.
+            </p>
+            <Button variant="outline" data-testid="button-view-full-comparison">
+              View Detailed Comparison
+            </Button>
+          </div>
         </div>
       </div>
 

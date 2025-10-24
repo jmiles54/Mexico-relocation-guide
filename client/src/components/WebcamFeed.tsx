@@ -42,15 +42,14 @@ export default function WebcamFeed({
       <div className="relative">
         <div className="absolute top-3 right-3 z-10 flex gap-2">
           {isLive && (
-            <Badge className="bg-red-500 text-white border-red-600">
+            <Badge variant="outline" className="bg-background/80 backdrop-blur">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
                 <span>LIVE</span>
               </div>
             </Badge>
           )}
-        </div>
-        
+        </div>        
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3 z-10">
           <div className="flex items-center gap-2 text-white text-sm">
             <MapPin className="w-4 h-4" />
