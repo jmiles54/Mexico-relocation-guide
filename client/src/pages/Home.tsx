@@ -9,7 +9,7 @@ import heroImage from '@assets/stock_images/puerto_vallarta_mexi_37c839b6.jpg';
 import zonaImage from '@assets/stock_images/zona_romantica_puert_63220432.jpg';
 import versallesImage from '@assets/stock_images/versalles_neighborho_6f389286.jpg';
 import marinaImage from '@assets/stock_images/marina_vallarta_yach_12d6d0ec.jpg';
-import meridaImage from '@assets/stock_images/centro_merida_mexico_c24e5b95.jpg';
+import pitillalImage from '@assets/stock_images/colorful_street_colo_1e0fdd01.jpg';
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -50,13 +50,14 @@ export default function Home() {
       beachDistance: "12 min walk"
     },
     {
-      name: "Centro",
-      city: "Mérida",
-      image: meridaImage,
-      affordabilityScore: 78,
-      rentPrice: "8,500 MXN",
-      expatRating: 8,
-      walkability: 8
+      name: "Pitillal",
+      city: "Puerto Vallarta",
+      image: pitillalImage,
+      affordabilityScore: 88,
+      rentPrice: "6,500 MXN",
+      expatRating: 4,
+      walkability: 5,
+      beachDistance: "40 min bus"
     }
   ];
 
