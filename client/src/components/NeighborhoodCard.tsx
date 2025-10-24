@@ -1,7 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { MapPin, DollarSign, Users, Footprints, Info } from "lucide-react";
+import { MapPin, DollarSign, Users, Footprints, Info, Waves } from "lucide-react";
+import { Link } from "wouter";
 
 interface NeighborhoodCardProps {
   name: string;
@@ -31,76 +32,79 @@ export default function NeighborhoodCard({
   };
 
   return (
-    <Card className="overflow-hidden hover-elevate cursor-pointer transition-all" data-testid={`card-neighborhood-${name.toLowerCase().replace(/\s+/g, '-')}`}>
-      <div className="relative h-48 overflow-hidden">
-        <img
-          src={image}
-          alt={name}
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute top-3 right-3">
-          <Badge className={`${getAffordabilityColor(affordabilityScore)} border`}>
-            Score: {affordabilityScore}
-          </Badge>
-        </div>
-      </div>
-      <CardContent className="p-4">
-        <div className="mb-3">
-          <h3 className="text-lg font-semibold text-foreground" data-testid={`text-neighborhood-name-${name.toLowerCase().replace(/\s+/g, '-')}`}>
-            {name}
-          </h3>
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            <MapPin className="w-3 h-3" />
-            <span>{city}</span>
+    <Link href="/neighborhood/zona-romantica">
+      <Card className="overflow-hidden hover-elevate cursor-pointer transition-all" data-testid={`card-neighborhood-${name.toLowerCase().replace(/\s+/g, '-')}`}>
+        <div className="relative h-48 overflow-hidden">
+          <img
+            src={image}
+            alt={name}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute top-3 right-3">
+            <Badge className={`${getAffordabilityColor(affordabilityScore)} border`}>
+              Score: {affordabilityScore}
+            </Badge>
           </div>
         </div>
-        
-        <div className="space-y-2 text-sm">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <DollarSign className="w-4 h-4" />
-              <span>1BR Furnished</span>
+        <CardContent className="p-4">
+          <div className="mb-3">
+            <h3 className="text-lg font-semibold text-foreground" data-testid={`text-neighborhood-name-${name.toLowerCase().replace(/\s+/g, '-')}`}>
+              {name}
+            </h3>
+            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+              <MapPin className="w-3 h-3" />
+              <span>{city}</span>
             </div>
-            <span className="font-mono font-semibold" data-testid={`text-rent-${name.toLowerCase().replace(/\s+/g, '-')}`}>{rentPrice}</span>
           </div>
           
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Users className="w-4 h-4" />
-              <span>Expat Community</span>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Info className="w-3 h-3 cursor-help" data-testid="icon-expat-info" />
-                </TooltipTrigger>
-                <TooltipContent className="max-w-xs">
-                  <p className="text-xs">
-                    Based on: # of expat venues, weekly meetup frequency, 
-                    Facebook group size, and English-speaking density. 
-                    Updated monthly from community surveys.
-                  </p>
-                </TooltipContent>
-              </Tooltip>
+          <div className="space-y-2 text-sm">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <DollarSign className="w-4 h-4" />
+                <span>1BR Furnished</span>
+              </div>
+              <span className="font-mono font-semibold" data-testid={`text-rent-${name.toLowerCase().replace(/\s+/g, '-')}`}>{rentPrice}</span>
             </div>
-            <span className="font-semibold">{expatRating}/10</span>
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Users className="w-4 h-4" />
+                <span>Expat Community</span>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="w-3 h-3 cursor-help" data-testid="icon-expat-info" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p className="text-xs">
+                      Based on: # of expat venues, weekly meetup frequency, 
+                      Facebook group size, and English-speaking density. 
+                      Updated monthly from community surveys.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              <span className="font-semibold">{expatRating}/10</span>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Footprints className="w-4 h-4" />
+                <span>Walkability</span>
+              </div>
+              <span className="font-semibold">{walkability}/10</span>
+            </div>
+            
+            {beachDistance && (
+              <div className="pt-2 border-t flex items-center gap-1">
+                <Waves className="w-3 h-3 text-primary" />
+                <span className="text-primary text-xs font-medium">
+                  {beachDistance} to beach
+                </span>
+              </div>
+            )}
           </div>
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Footprints className="w-4 h-4" />
-              <span>Walkability</span>
-            </div>
-            <span className="font-semibold">{walkability}/10</span>
-          </div>
-          
-          {beachDistance && (
-            <div className="pt-2 border-t">
-              <span className="text-primary text-xs font-medium">
-                🏖️ {beachDistance} to beach
-              </span>
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </Link>
   );
 }
