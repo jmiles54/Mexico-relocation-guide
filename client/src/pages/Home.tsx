@@ -26,7 +26,7 @@ export default function Home() {
       affordabilityScore: 72,
       rentPrice: "14,000 MXN",
       expatRating: 9,
-      climate: "Tropical",
+      walkability: 9,
       beachDistance: "3 min walk"
     },
     {
@@ -36,7 +36,7 @@ export default function Home() {
       affordabilityScore: 82,
       rentPrice: "7,800 MXN",
       expatRating: 6,
-      climate: "Tropical",
+      walkability: 7,
       beachDistance: "25 min bus"
     },
     {
@@ -46,7 +46,7 @@ export default function Home() {
       affordabilityScore: 65,
       rentPrice: "12,200 MXN",
       expatRating: 7,
-      climate: "Tropical",
+      walkability: 6,
       beachDistance: "12 min walk"
     },
     {
@@ -56,7 +56,7 @@ export default function Home() {
       affordabilityScore: 78,
       rentPrice: "8,500 MXN",
       expatRating: 8,
-      climate: "Hot & Humid"
+      walkability: 8
     }
   ];
 

@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, DollarSign, Users, Sun } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { MapPin, DollarSign, Users, Footprints, Info } from "lucide-react";
 
 interface NeighborhoodCardProps {
   name: string;
@@ -9,7 +10,7 @@ interface NeighborhoodCardProps {
   affordabilityScore: number;
   rentPrice: string;
   expatRating: number;
-  climate: string;
+  walkability: number;
   beachDistance?: string;
 }
 
@@ -20,7 +21,7 @@ export default function NeighborhoodCard({
   affordabilityScore,
   rentPrice,
   expatRating,
-  climate,
+  walkability,
   beachDistance,
 }: NeighborhoodCardProps) {
   const getAffordabilityColor = (score: number) => {
@@ -58,7 +59,7 @@ export default function NeighborhoodCard({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-muted-foreground">
               <DollarSign className="w-4 h-4" />
-              <span>1BR Rent</span>
+              <span>1BR Furnished</span>
             </div>
             <span className="font-mono font-semibold" data-testid={`text-rent-${name.toLowerCase().replace(/\s+/g, '-')}`}>{rentPrice}</span>
           </div>
@@ -67,16 +68,28 @@ export default function NeighborhoodCard({
             <div className="flex items-center gap-2 text-muted-foreground">
               <Users className="w-4 h-4" />
               <span>Expat Community</span>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="w-3 h-3 cursor-help" data-testid="icon-expat-info" />
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs">
+                  <p className="text-xs">
+                    Based on: # of expat venues, weekly meetup frequency, 
+                    Facebook group size, and English-speaking density. 
+                    Updated monthly from community surveys.
+                  </p>
+                </TooltipContent>
+              </Tooltip>
             </div>
             <span className="font-semibold">{expatRating}/10</span>
           </div>
           
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-muted-foreground">
-              <Sun className="w-4 h-4" />
-              <span>Climate</span>
+              <Footprints className="w-4 h-4" />
+              <span>Walkability</span>
             </div>
-            <span className="font-semibold">{climate}</span>
+            <span className="font-semibold">{walkability}/10</span>
           </div>
           
           {beachDistance && (

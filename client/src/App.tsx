@@ -6,6 +6,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Home from "@/pages/Home";
 import Neighborhood from "@/pages/Neighborhood";
 import Compare from "@/pages/Compare";
+import NeighborhoodMatcher from "@/pages/NeighborhoodMatcher";
+import ActivityDiscovery from "@/pages/ActivityDiscovery";
+import RelocationChecklist from "@/pages/RelocationChecklist";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -14,6 +17,9 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/neighborhood/:id" component={Neighborhood} />
       <Route path="/compare" component={Compare} />
+      <Route path="/neighborhood-matcher" component={NeighborhoodMatcher} />
+      <Route path="/activities" component={ActivityDiscovery} />
+      <Route path="/checklist" component={RelocationChecklist} />
       <Route component={NotFound} />
     </Switch>
   );
