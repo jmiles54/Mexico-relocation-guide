@@ -125,8 +125,61 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Features Section */}
+      {/* Interactive Tools Section */}
       <div className="bg-primary/5 py-16">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">Interactive Decision Tools</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Use our personalized tools to discover your ideal neighborhood and plan your move
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <Card className="hover-elevate cursor-pointer" onClick={() => window.location.href = '/neighborhood-matcher'} data-testid="card-tool-matcher">
+              <CardContent className="p-6">
+                <div className="text-4xl mb-4">🎯</div>
+                <h3 className="text-xl font-semibold mb-2">Neighborhood Matcher</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Answer a few questions and get personalized neighborhood recommendations based on your budget, lifestyle, and preferences.
+                </p>
+                <Button variant="outline" className="w-full" data-testid="button-start-matcher">
+                  Start Quiz
+                </Button>
+              </CardContent>
+            </Card>
+            
+            <Card className="hover-elevate cursor-pointer" onClick={() => window.location.href = '/activities'} data-testid="card-tool-activities">
+              <CardContent className="p-6">
+                <div className="text-4xl mb-4">🍷</div>
+                <h3 className="text-xl font-semibold mb-2">Activity Discovery</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Filter expat venues by demographics, interests, and events. Find your social scene before you arrive.
+                </p>
+                <Button variant="outline" className="w-full" data-testid="button-explore-venues">
+                  Explore Venues
+                </Button>
+              </CardContent>
+            </Card>
+            
+            <Card className="hover-elevate cursor-pointer" onClick={() => window.location.href = '/checklist'} data-testid="card-tool-checklist">
+              <CardContent className="p-6">
+                <div className="text-4xl mb-4">✅</div>
+                <h3 className="text-xl font-semibold mb-2">Relocation Checklist</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Step-by-step timeline from 6 months before your move to your first month in Mexico.
+                </p>
+                <Button variant="outline" className="w-full" data-testid="button-view-checklist">
+                  View Checklist
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+
+      {/* Features Section */}
+      <div className="py-16">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">Why Use Our Guide?</h2>

@@ -36,7 +36,8 @@ export default function NeighborhoodMatcher() {
   const getRecommendations = () => {
     const recommendations = [];
     
-    if (budget[0] < 10000 && socialScene === "local") {
+    // Budget-based recommendations
+    if (budget[0] < 10000) {
       recommendations.push({
         name: "Versalles",
         city: "Puerto Vallarta",
@@ -46,11 +47,12 @@ export default function NeighborhoodMatcher() {
         expatRating: 6,
         walkability: 7,
         beachDistance: "25 min bus",
-        matchScore: 95
+        matchScore: socialScene === "local" ? 95 : 85
       });
     }
     
-    if (beachImportance === "essential" && budget[0] >= 12000) {
+    // Beach importance
+    if (beachImportance === "essential") {
       recommendations.push({
         name: "Zona Romántica",
         city: "Puerto Vallarta",
@@ -60,11 +62,29 @@ export default function NeighborhoodMatcher() {
         expatRating: 9,
         walkability: 9,
         beachDistance: "3 min walk",
-        matchScore: 92
+        matchScore: budget[0] >= 12000 ? 95 : 82
       });
     }
     
-    if (lifestyle === "quiet" && budget[0] >= 11000) {
+    // Lifestyle preferences
+    if (lifestyle === "lively") {
+      const score = recommendations.some(r => r.name === "Zona Romántica") ? 88 : 93;
+      if (!recommendations.some(r => r.name === "Zona Romántica")) {
+        recommendations.push({
+          name: "Zona Romántica",
+          city: "Puerto Vallarta",
+          image: zonaImage,
+          affordabilityScore: 72,
+          rentPrice: "14,000 MXN",
+          expatRating: 9,
+          walkability: 9,
+          beachDistance: "3 min walk",
+          matchScore: score
+        });
+      }
+    }
+    
+    if (lifestyle === "quiet" || beachImportance === "nice") {
       recommendations.push({
         name: "Marina Vallarta",
         city: "Puerto Vallarta",
@@ -74,11 +94,31 @@ export default function NeighborhoodMatcher() {
         expatRating: 7,
         walkability: 6,
         beachDistance: "12 min walk",
-        matchScore: 88
+        matchScore: lifestyle === "quiet" ? 90 : 85
       });
     }
     
-    return recommendations.sort((a, b) => b.matchScore - a.matchScore);
+    // Social scene preferences
+    if (socialScene === "expat-heavy" && !recommendations.some(r => r.name === "Zona Romántica")) {
+      recommendations.push({
+        name: "Zona Romántica",
+        city: "Puerto Vallarta",
+        image: zonaImage,
+        affordabilityScore: 72,
+        rentPrice: "14,000 MXN",
+        expatRating: 9,
+        walkability: 9,
+        beachDistance: "3 min walk",
+        matchScore: 91
+      });
+    }
+    
+    // Remove duplicates and sort
+    const unique = recommendations.filter((rec, index, self) =>
+      index === self.findIndex((r) => r.name === rec.name)
+    );
+    
+    return unique.sort((a, b) => b.matchScore - a.matchScore);
   };
 
   if (showResults) {

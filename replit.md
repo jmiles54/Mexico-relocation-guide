@@ -1,0 +1,122 @@
+# Mexico Relocation Guide
+
+## Overview
+
+A comprehensive web application designed to help prospective expats evaluate and compare Mexican cities and neighborhoods for relocation. The platform provides data-driven insights across multiple dimensions including cost of living, safety, climate, expat community presence, and local amenities. Built with a focus on neighborhood-level granularity, the application features interactive comparison tools, a neighborhood matching quiz, activity discovery for specific demographics, and relocation checklists.
+
+The application serves as a relocation decision-support tool, emphasizing transparent data sourcing, real-time information feeds, and scannable data hierarchies to help users make informed choices about where to live in Mexico.
+
+## User Preferences
+
+Preferred communication style: Simple, everyday language.
+
+## System Architecture
+
+### Frontend Architecture
+
+**Framework**: React with TypeScript, built using Vite as the build tool and development server.
+
+**Routing**: Client-side routing implemented with Wouter, a lightweight React router. Routes include:
+- Home page with neighborhood search and featured listings
+- Individual neighborhood detail pages
+- Neighborhood comparison tool
+- Interactive neighborhood matcher quiz
+- Activity/venue discovery
+- Relocation checklist
+
+**State Management**: TanStack Query (React Query) for server state management with custom query client configuration. No global client state management library - component-level state with React hooks.
+
+**UI Component System**: Shadcn/ui component library built on Radix UI primitives with Tailwind CSS for styling. Uses the "New York" style variant with a Material Design foundation per design guidelines. Custom theme system with CSS variables for light/dark mode support.
+
+**Styling Approach**: 
+- Tailwind CSS utility-first framework
+- Custom design tokens via CSS variables defined in index.css
+- Roboto font family (primary) and Roboto Mono (for data display)
+- Spacing based on 4px scale (4, 8, 12, 16, 20)
+- Responsive breakpoints at 768px (mobile)
+
+**Key UI Patterns**:
+- Reusable card-based layouts for neighborhoods, venues, costs
+- Data visualization through metric cards with icon, label, value, and trend
+- Comparison tables with horizontal scroll on mobile
+- Interactive filters with sliders and checkboxes
+- Weather widgets and live webcam feeds
+
+### Backend Architecture
+
+**Server Framework**: Express.js running on Node.js with TypeScript.
+
+**API Structure**: RESTful API with routes prefixed under `/api`. Currently minimal backend implementation - routes registered in `server/routes.ts` but application appears to be primarily frontend-driven with mock data.
+
+**Development Server**: Custom Vite middleware integration for HMR (Hot Module Replacement) in development. Production build serves static assets from `dist/public`.
+
+**Data Layer**: Storage abstraction interface (`IStorage`) with in-memory implementation (`MemStorage`). Supports basic CRUD operations for users. Designed to be swappable with database-backed implementation.
+
+### Data Storage
+
+**Database**: PostgreSQL configured via Drizzle ORM and Neon serverless driver (`@neondatabase/serverless`).
+
+**Schema Definition**: Centralized in `shared/schema.ts` using Drizzle's schema builder. Currently defines:
+- Users table with UUID primary keys
+- Zod validation schemas via `drizzle-zod`
+
+**Migration Strategy**: Drizzle Kit for schema migrations, output to `./migrations` directory. Push-based workflow via `db:push` script.
+
+**Connection**: Database URL via `DATABASE_URL` environment variable, required at startup.
+
+**Current State**: Database infrastructure configured but minimal schema. Application primarily uses mock/hardcoded data in components. Storage interface suggests future database integration planned.
+
+### Authentication & Authorization
+
+No authentication system currently implemented. User schema exists but no login/session management in routes. Session infrastructure via `express-session` with `connect-pg-simple` for PostgreSQL session storage is installed but not configured in codebase.
+
+### External Dependencies
+
+**UI Component Libraries**:
+- Radix UI primitives for accessible, unstyled components (accordion, dialog, dropdown, etc.)
+- Embla Carousel for image carousels
+- cmdk for command palette patterns
+- Lucide React for icon system
+
+**Styling & Design**:
+- Tailwind CSS with custom configuration
+- PostCSS with Autoprefixer
+- class-variance-authority for variant-based component styling
+- clsx and tailwind-merge for className utilities
+
+**Forms & Validation**:
+- React Hook Form for form state management
+- Zod for schema validation
+- @hookform/resolvers for validation integration
+
+**Data Fetching**:
+- TanStack Query for async state and caching
+- Native Fetch API for HTTP requests
+
+**Date Handling**:
+- date-fns for date manipulation and formatting
+
+**Development Tools**:
+- Replit-specific plugins for runtime error overlay, cartographer, and dev banner
+- tsx for TypeScript execution in development
+- esbuild for production server bundling
+
+**Database & ORM**:
+- Drizzle ORM with PostgreSQL dialect
+- Neon serverless PostgreSQL client
+- drizzle-zod for type-safe schema validation
+
+### Asset Management
+
+Static assets stored in `attached_assets/` directory with Vite alias `@assets`. Includes stock images for neighborhoods, venues, and beaches. Image imports use Vite's asset handling for optimization and cache-busting.
+
+### Build & Deployment
+
+**Development**: `npm run dev` - runs tsx server with Vite middleware
+**Production Build**: 
+1. Vite builds client to `dist/public`
+2. esbuild bundles server to `dist/index.js` (ESM format, external packages)
+
+**Production Start**: Node.js runs bundled server from `dist/index.js`
+
+**Type Checking**: Standalone `npm run check` script using TypeScript compiler
