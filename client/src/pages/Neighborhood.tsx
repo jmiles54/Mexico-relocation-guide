@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, ArrowLeft, Waves, Users, Coffee, DollarSign, Shield, Sun, Video, ExternalLink } from "lucide-react";
+import { MapPin, ArrowLeft, Waves, Users, Coffee, DollarSign, Shield, Sun, Video, ExternalLink, Heart, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import WeatherWidget from "@/components/WeatherWidget";
@@ -13,6 +13,7 @@ import ProximityCalculator from "@/components/ProximityCalculator";
 import MetricCard from "@/components/MetricCard";
 import MapView from "@/components/MapView";
 import StreetView from "@/components/StreetView";
+import BudgetEngine from "@/components/BudgetEngine";
 import zonaImage from '@assets/stock_images/colorful_street_colo_1e0fdd01.jpg';
 import wineBarImage from '@assets/stock_images/wine_bar_restaurant__5c42922c.jpg';
 import beachImage from '@assets/stock_images/puerto_vallarta_mexi_37c839b6.jpg';
@@ -183,12 +184,15 @@ export default function Neighborhood() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6 h-auto" data-testid="tabs-navigation">
+          <TabsList className="grid w-full grid-cols-7 h-auto" data-testid="tabs-navigation">
             <TabsTrigger value="overview" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground" data-testid="tab-overview">
               Overview
             </TabsTrigger>
             <TabsTrigger value="costs" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground" data-testid="tab-costs">
               Costs
+            </TabsTrigger>
+            <TabsTrigger value="budget" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground" data-testid="tab-budget">
+              Budget Tool
             </TabsTrigger>
             <TabsTrigger value="social" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground" data-testid="tab-social">
               Social Scene
@@ -307,6 +311,50 @@ export default function Neighborhood() {
 
           <TabsContent value="costs">
             <CostBreakdown neighborhoodName="Zona Romántica" items={costItems} />
+          </TabsContent>
+
+          <TabsContent value="budget" className="space-y-8">
+            <section>
+              <h2 className="text-2xl font-bold mb-4">Budget Calculator & Senior Comfort</h2>
+              <p className="text-muted-foreground mb-6">
+                Calculate your personalized monthly budget and assess senior-friendly amenities
+              </p>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Budget Engine */}
+                <BudgetEngine cityId="pv" cityName="Puerto Vallarta" />
+                
+                {/* Senior Comfort Suite Placeholder */}
+                <Card data-testid="card-senior-comfort">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Heart className="w-5 h-5 text-primary" />
+                      Senior Comfort Suite
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-muted-foreground">
+                      Get an AI-powered assessment of this neighborhood's suitability for seniors (55-80) based on mobility, healthcare access, and safety factors.
+                    </p>
+                    
+                    <Button 
+                      className="w-full"
+                      data-testid="button-senior-score"
+                      disabled
+                    >
+                      <Zap className="w-4 h-4 mr-2" />
+                      Get Real-Time Senior Score
+                    </Button>
+
+                    <div className="p-4 border rounded-lg bg-muted/50">
+                      <p className="text-sm text-muted-foreground">
+                        Coming soon: AI-powered senior comfort analysis using real-time data
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </section>
           </TabsContent>
 
           <TabsContent value="social" className="space-y-6">

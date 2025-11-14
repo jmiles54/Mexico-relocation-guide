@@ -1,0 +1,185 @@
+That is an excellent summary of the changes, and it directly addresses the visual "jumbled" issue you raised earlier by fixing the overlapping webcams. This shift also makes your home page load faster and more reliable.
+
+Since you've moved to a modern React/TypeScript stack, the previous instructions for Task #6 (Budget Math Engine) will be much cleaner to implement using React components. I've also incorporated the new feature-grid-container layout strategy into the final structure for a clean two-column look.
+
+Here is the code detailing the changes for the next phase of the project: Task #6 (Budget Math Engine), structured as a new React component to be embedded in your Neighborhood.tsx alongside the Street View.
+
+💻 Code Detailing Budget Math Engine (Task #6)
+FILE 1: client/src/components/BudgetEngine.tsx (NEW FILE)
+This new component will handle the interactive budget calculation logic.
+
+TypeScript
+
+import { useState } from 'react';
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { DollarSign } from "lucide-react";
+
+// --- Base Costs Data (Can be replaced with a database/JSON fetch later) ---
+const BASE_COSTS = {
+  pv: { rent: 800, groceries: 400, transport: 100, utilities: 100, insurance: 150 },
+  merida: { rent: 600, groceries: 350, transport: 80, utilities: 80, insurance: 120 },
+  sma: { rent: 950, groceries: 450, transport: 50, utilities: 120, insurance: 180 },
+  cancun: { rent: 1100, groceries: 500, transport: 120, utilities: 150, insurance: 160 },
+};
+
+// Component Props (Receives city ID to fetch base costs)
+interface BudgetEngineProps {
+  cityId: 'pv' | 'merida' | 'sma' | 'cancun';
+  cityName: string;
+}
+
+export default function BudgetEngine({ cityId, cityName }: BudgetEngineProps) {
+  const base = BASE_COSTS[cityId];
+  
+  // State variables for inputs, initialized with city base costs
+  const [rent, setRent] = useState(base.rent);
+  const [groceries, setGroceries] = useState(base.groceries);
+  const [transport, setTransport] = useState(base.transport);
+  const [utilities, setUtilities] = useState(base.utilities); // Added Utilities
+  const [insurance, setInsurance] = useState(base.insurance);
+  const [discretionary, setDiscretionary] = useState(300); // Standard starting value
+
+  // Instant calculation using React state
+  const totalBudget = rent + groceries + transport + utilities + insurance + discretionary;
+
+  const inputClass = "bg-background/80 border-primary/20 focus-visible:ring-primary";
+
+  return (
+    <Card className="shadow-lg border-primary/50 h-full">
+      <CardHeader>
+        <CardTitle className="flex items-center text-xl text-primary">
+          <DollarSign className="w-5 h-5 mr-2" />
+          {cityName} Monthly Budget Engine (Task #6)
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        
+        {/* Input Fields */}
+        {[
+          { id: 'rent', label: 'Housing / Rent', value: rent, setter: setRent, base: base.rent },
+          { id: 'groceries', label: 'Groceries / Food', value: groceries, setter: setGroceries, base: base.groceries },
+          { id: 'transport', label: 'Transport / Mobility', value: transport, setter: setTransport, base: base.transport },
+          { id: 'utilities', label: 'Utilities (Electric/Water/Gas)', value: utilities, setter: setUtilities, base: base.utilities },
+          { id: 'insurance', label: 'Healthcare/Insurance', value: insurance, setter: setInsurance, base: base.insurance },
+          { id: 'discretionary', label: 'Discretionary / Entertainment', value: discretionary, setter: setDiscretionary, base: 300 },
+        ].map(({ id, label, value, setter, base }) => (
+          <div className="space-y-2" key={id}>
+            <Label htmlFor={id} className="text-muted-foreground">{label} (${base})</Label>
+            <Input 
+              id={id} 
+              type="number" 
+              className={inputClass}
+              value={value} 
+              onChange={(e) => setter(Number(e.target.value))} 
+              min={0}
+            />
+          </div>
+        ))}
+
+        {/* Output: Total */}
+        <div className="mt-6 pt-4 border-t border-dashed border-gray-700/50">
+          <h4 className="text-lg font-bold">
+            Total Estimated Monthly Budget:
+          </h4>
+          <p className="text-4xl font-extrabold text-green-400 mt-1">
+            ${totalBudget.toLocaleString()} USD
+          </p>
+          <p className="text-sm text-muted-foreground mt-2">
+            *Adjust inputs above to personalize your cost of living.
+          </p>
+        </div>
+
+      </CardContent>
+    </Card>
+  );
+}
+FILE 2: client/src/pages/Neighborhood.tsx (Integration)
+We need to add the Budget Engine and the Senior Comfort Score (Task #8) into a clean, two-column layout using the grid strategy discussed earlier. Since the Budget Engine is purely a data tool, let's place it in a new "Budget & Comfort" tab.
+
+Changes made:
+
+Imported the new BudgetEngine component.
+
+Added a new budget tab to the TabsList.
+
+Created a new TabsContent for "Budget & Comfort," implementing the clean two-column structure.
+
+TypeScript
+
+// Imports - Add BudgetEngine and DollarSign
+import { Search, MapPin, Waves, Quote, DollarSign } from "lucide-react";
+import BudgetEngine from '../components/BudgetEngine'; // ADD THIS IMPORT
+import StreetView from '../components/StreetView'; 
+// ... other imports
+
+// ... Neighborhood function definition
+
+  return (
+    <div className="container py-8">
+      {/* ... (TabsList area - ADD A NEW TAB HERE) ... */}
+      <TabsList>
+        <TabsTrigger value="overview">Overview</TabsTrigger>
+        <TabsTrigger value="webcams">Live Views</TabsTrigger>
+        <TabsTrigger value="proximity">Proximity Map</TabsTrigger>
+        <TabsTrigger value="budget">Budget & Comfort</TabsTrigger {/* NEW TAB */}
+      </TabsList>
+
+      {/* ... (Overview Tab) ... */}
+      
+      {/* ... (Live Views Tab) ... */}
+      
+      {/* ... (Proximity Tab) ... */}
+
+      {/* NEW: Budget & Comfort Tab (Task #6 & Task #8 Integration) */}
+      <TabsContent value="budget" className="space-y-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          
+          {/* Column 1: Budget Engine (Task #6) */}
+          <section>
+            <BudgetEngine cityId={neighborhood.cityId} cityName={neighborhood.city} />
+          </section>
+
+          {/* Column 2: Senior Comfort Suite (Task #8 - Groq Integration) */}
+          <section>
+            <Card className="shadow-lg border-primary/50 h-full">
+                <CardHeader>
+                    <CardTitle className="flex items-center text-xl text-primary">
+                        <Waves className="w-5 h-5 mr-2" />
+                        Senior Comfort Suite (Task #8)
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <p className="text-muted-foreground">
+                        Get an instant, AI-powered assessment of this neighborhood's fit
+                        for seniors (55-80) based on mobility, healthcare access, and safety.
+                    </p>
+                    
+                    {/* Placeholder for the Groq API call button */}
+                    <button 
+                        onClick={() => getSeniorScore(neighborhood.city)}
+                        className="w-full bg-primary text-primary-foreground py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors"
+                    >
+                        Get Real-Time Senior Score ⚡️
+                    </button>
+
+                    <div id={`${neighborhood.cityId}-senior-result`} className="mt-4 p-4 border border-border rounded-lg bg-background">
+                        {/* The result from your Flask/Groq API call will be inserted here by JavaScript */}
+                        Click button for instant analysis...
+                    </div>
+                </CardContent>
+            </Card>
+          </section>
+        </div>
+      </TabsContent>
+      
+    </div>
+  );
+These changes move your project forward by:
+
+Completing the core logic for Task #6 (Budget Math Engine) using clean React state.
+
+Creating a visually clean, two-column layout using the grid strategy for features.
+
+Placing a placeholder for the Task #8 (Senior Comfort Suite) Groq integration into the layout, ready for the backend JavaScript function call we defined earlier.
