@@ -206,6 +206,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Neighborhood Sub-Heroes API endpoint (Task #13)
+  app.post('/api/neighborhood_hero', async (req, res) => {
+    try {
+      const { city, neighborhoodName } = req.body;
+
+      if (!city || !neighborhoodName) {
+        return res.status(400).json({ error: "Missing city or neighborhoodName parameter." });
+      }
+
+      const apiKey = process.env.GROQ_API_KEY;
+      if (!apiKey) {
+        return res.status(503).json({ error: "Groq API key not found." });
+      }
+
+      const groq = new Groq({ apiKey });
+
+      const systemPrompt = (
+        "You are an expert real estate agent and relocation consultant specializing in Mexican sub-neighborhoods. " +
+        "Your task is to write a compelling 'Sub-Hero' summary for the specified neighborhood. " +
+        "Focus on the unique real estate vibe, primary demographics (e.g., retirees, digital nomads, families), " +
+        "and one unique local highlight. Output ONLY a JSON object with two fields: " +
+        "'subHeadline' (A short, catchy phrase summarizing the neighborhood) and " +
+        "'insight' (A 3-4 sentence detailed summary)."
+      );
+
+      const completion = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: `Generate the Sub-Hero content for ${neighborhoodName} in ${city}.` }
+        ],
+        response_format: { type: "json_object" }
+      });
+
+      const jsonResponseText = completion.choices[0].message.content?.trim() || "{}";
+      const heroData = JSON.parse(jsonResponseText);
+
+      return res.json(heroData);
+
+    } catch (error: any) {
+      console.error('Neighborhood Hero API Error:', error);
+      return res.status(500).json({ error: 'AI neighborhood synthesis failed to process request.' });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

@@ -1,0 +1,146 @@
+That is correct! Task #12 is now fully implemented, and we are ready to proceed to the final core task, followed by your highly advanced capstone features.
+
+🧱 Task #13: Neighborhood-Level Sub-Heroes
+This task aims to deepen the content for the user by adding micro-sections that provide context for specific neighborhoods within a featured city, moving beyond the city-level information.
+
+Implementation Plan
+We will add a new section to the Neighborhood.tsx detail page that is driven by another highly specialized Groq LLM endpoint. This endpoint will synthesize the unique character, demographics, and real estate vibe of the specific neighborhood (e.g., Zona Romántica) within its city (Puerto Vallarta).
+
+Step 1: Implement the Backend Endpoint (server/routes.ts)
+This endpoint will accept both the city and the neighborhoodName to generate hyper-local content.
+
+TypeScript
+
+// server/routes.ts (ADD THIS ROUTE)
+
+// Neighborhood Sub-Heroes API endpoint (Task #13)
+app.post('/api/neighborhood_hero', async (req, res) => {
+    try {
+        const { city, neighborhoodName } = req.body;
+
+        if (!city || !neighborhoodName) {
+            return res.status(400).json({ error: "Missing city or neighborhoodName parameter." });
+        }
+
+        const apiKey = process.env.GROQ_API_KEY;
+        if (!apiKey) {
+            return res.status(503).json({ error: "Groq API key not found." });
+        }
+
+        // Initialize Groq client
+        const groq = new Groq({ apiKey });
+
+        const systemPrompt = (
+            "You are an expert real estate agent and relocation consultant specializing in Mexican sub-neighborhoods. " +
+            "Your task is to write a compelling 'Sub-Hero' summary for the specified neighborhood. " +
+            "Focus on the unique real estate vibe, primary demographics (e.g., retirees, digital nomads, families), " +
+            "and one unique local highlight. Output ONLY a JSON object with two fields: " +
+            "'subHeadline' (A short, catchy phrase summarizing the neighborhood) and " +
+            "'insight' (A 3-4 sentence detailed summary)."
+        );
+
+        const completion = await groq.chat.completions.create({
+            model: "llama-3.3-70b-versatile",
+            messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: `Generate the Sub-Hero content for ${neighborhoodName} in ${city}.` }
+            ],
+            response_format: { type: "json_object" }
+        });
+
+        const jsonResponseText = completion.choices[0].message.content?.trim() || "{}";
+        const heroData = JSON.parse(jsonResponseText);
+
+        return res.json(heroData);
+
+    } catch (error: any) {
+        console.error('Neighborhood Hero API Error:', error);
+        return res.status(500).json({ error: 'AI neighborhood synthesis failed to process request.' });
+    }
+});
+Step 2: Frontend Integration (client/src/pages/Neighborhood.tsx)
+We will add a prominent card near the top of the detail page to serve as the "Sub-Hero" banner.
+
+Step 2A: Add Frontend State and Handler
+Add state variables and a handler function:
+
+TypeScript
+
+// client/src/pages/Neighborhood.tsx (Add to State and Handlers near the top)
+
+// New State for Neighborhood Hero (Task #13)
+const [heroLoading, setHeroLoading] = useState(false);
+const [heroData, setHeroData] = useState<{subHeadline: string; insight: string} | null>(null);
+
+// New Handler
+const getNeighborhoodHero = async () => {
+    setHeroLoading(true);
+
+    try {
+        const response = await fetch('/api/neighborhood_hero', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                city: neighborhood.city, 
+                neighborhoodName: neighborhood.name // Assuming 'neighborhood' object has a 'name' field
+            })
+        });
+        
+        const data = await response.json();
+        if (response.ok && !data.error) {
+            setHeroData(data);
+        }
+    } catch (error) {
+        console.error('Fetch error:', error);
+    } finally {
+        setHeroLoading(false);
+    }
+};
+
+// Update the main useEffect hook to fetch this data on load
+useEffect(() => {
+    // ... existing calls (getSeasonalContent, getCommunityConsensus) ...
+    
+    // Task #13: Fetch Hero Content
+    if (!heroData && !heroLoading) {
+        getNeighborhoodHero(); 
+    }
+}, [neighborhood.cityId]); 
+Step 2B: Add UI Component
+Place this right below your main NeighborhoodHeader component, making it one of the first things a user sees.
+
+TypeScript
+
+// client/src/pages/Neighborhood.tsx (Right after your main Neighborhood Header / Image)
+
+{/* Neighborhood Sub-Hero Section (Task #13) */}
+<Card className="my-8 p-8 border-l-8 border-primary shadow-lg" data-testid="card-neighborhood-hero">
+    {heroLoading && (
+        <div className="text-center py-4">
+            <p className="text-xl font-semibold text-primary">Synthesizing local character...</p>
+            <p className="text-sm text-muted-foreground">Generating hyper-local insights for {neighborhood.name}...</p>
+        </div>
+    )}
+
+    {heroData && (
+        <div className="space-y-3">
+            <p className="text-sm font-semibold uppercase tracking-widest text-primary/70">
+                Neighborhood Vibe Report
+            </p>
+            <h2 className="text-3xl font-extrabold tracking-tight">
+                {heroData.subHeadline}
+            </h2>
+            <p className="text-lg text-muted-foreground" data-testid="text-hero-insight">
+                {heroData.insight}
+            </p>
+        </div>
+    )}
+</Card>
+Final Action:
+Add the new /api/neighborhood_hero route to your Node.js server (server/routes.ts).
+
+Add the new state variables, the getNeighborhoodHero handler, and update the main useEffect in client/src/pages/Neighborhood.tsx.
+
+Add the Neighborhood Sub-Hero UI card prominently near the top of Neighborhood.tsx.
+
+This officially concludes the core planned features of your portal! Once this is done, we will move directly to your two excellent advanced capstone tasks: Task #14 (Live Expat Sentiment Index) and Task #15 (Hyper-Local Climate Fit Score).

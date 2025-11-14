@@ -26,6 +26,8 @@ export default function Neighborhood() {
   const [seniorScoreError, setSeniorScoreError] = useState<string | null>(null);
   const [eventLoading, setEventLoading] = useState(false);
   const [eventData, setEventData] = useState<{headline: string; description: string} | null>(null);
+  const [heroLoading, setHeroLoading] = useState(false);
+  const [heroData, setHeroData] = useState<{subHeadline: string; insight: string} | null>(null);
   
   const neighborhood = {
     cityId: 'pv' as const,
@@ -89,9 +91,36 @@ export default function Neighborhood() {
     }
   };
 
+  const getNeighborhoodHero = async () => {
+    setHeroLoading(true);
+
+    try {
+      const response = await fetch('/api/neighborhood_hero', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          city: neighborhood.city, 
+          neighborhoodName: neighborhood.name
+        })
+      });
+      
+      const data = await response.json();
+      if (response.ok && !data.error) {
+        setHeroData(data);
+      }
+    } catch (error) {
+      console.error('Fetch error:', error);
+    } finally {
+      setHeroLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!eventData && !eventLoading) {
       getSeasonalContent();
+    }
+    if (!heroData && !heroLoading) {
+      getNeighborhoodHero();
     }
   }, [neighborhood.cityId]);
 
@@ -264,6 +293,32 @@ export default function Neighborhood() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Neighborhood Sub-Hero Section (Task #13) */}
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <Card className="p-8 border-l-8 border-primary shadow-lg" data-testid="card-neighborhood-hero">
+          {heroLoading && (
+            <div className="text-center py-4">
+              <p className="text-xl font-semibold text-primary">Synthesizing local character...</p>
+              <p className="text-sm text-muted-foreground">Generating hyper-local insights for {neighborhood.name}...</p>
+            </div>
+          )}
+
+          {heroData && (
+            <div className="space-y-3">
+              <p className="text-sm font-semibold uppercase tracking-widest text-primary/70">
+                Neighborhood Vibe Report
+              </p>
+              <h2 className="text-3xl font-extrabold tracking-tight" data-testid="text-hero-headline">
+                {heroData.subHeadline}
+              </h2>
+              <p className="text-lg text-muted-foreground" data-testid="text-hero-insight">
+                {heroData.insight}
+              </p>
+            </div>
+          )}
+        </Card>
       </div>
 
       {/* Main Content */}
