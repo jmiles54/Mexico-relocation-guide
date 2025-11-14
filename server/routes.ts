@@ -251,6 +251,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Live Expat Sentiment Index API endpoint (Task #14)
+  app.post('/api/expat_sentiment', async (req, res) => {
+    try {
+      const { city } = req.body;
+
+      if (!city) {
+        return res.status(400).json({ error: "Missing city parameter." });
+      }
+
+      const apiKey = process.env.GROQ_API_KEY;
+      if (!apiKey) {
+        return res.status(503).json({ error: "Groq API key not found." });
+      }
+
+      const groq = new Groq({ apiKey });
+
+      const systemPrompt = (
+        "You are a social media analyst that tracks expat sentiment for Mexican cities. " +
+        "Based on recent (last 30 days) community discussions, generate a 'Live Expat Sentiment Score' out of 100 for the provided city. " +
+        "Score higher for positive vibes, lower for recurring complaints (e.g., bureaucracy, rising costs, safety). " +
+        "Output ONLY a JSON object with two fields: 'score' (an integer from 60 to 99) and 'summary' (A 3-sentence justification of the score based on perceived recent trends)."
+      );
+
+      const completion = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: `Generate the current Live Expat Sentiment Score for ${city}.` }
+        ],
+        response_format: { type: "json_object" }
+      });
+
+      const jsonResponseText = completion.choices[0].message.content?.trim() || '{"score": 80, "summary": "Could not determine recent sentiment."}';
+      const sentimentData = JSON.parse(jsonResponseText);
+
+      return res.json(sentimentData);
+
+    } catch (error: any) {
+      console.error('Expat Sentiment API Error:', error);
+      return res.status(500).json({ error: 'AI sentiment analysis failed to process request.' });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

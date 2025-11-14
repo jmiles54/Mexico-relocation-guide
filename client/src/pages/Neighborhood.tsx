@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, ArrowLeft, Waves, Users, Coffee, DollarSign, Shield, Sun, Video, ExternalLink, Heart, Zap, Scale } from "lucide-react";
+import { MapPin, ArrowLeft, Waves, Users, Coffee, DollarSign, Shield, Sun, Video, ExternalLink, Heart, Zap, Scale, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import WeatherWidget from "@/components/WeatherWidget";
@@ -28,6 +28,8 @@ export default function Neighborhood() {
   const [eventData, setEventData] = useState<{headline: string; description: string} | null>(null);
   const [heroLoading, setHeroLoading] = useState(false);
   const [heroData, setHeroData] = useState<{subHeadline: string; insight: string} | null>(null);
+  const [sentimentLoading, setSentimentLoading] = useState(false);
+  const [sentimentData, setSentimentData] = useState<{score: number; summary: string} | null>(null);
   
   const neighborhood = {
     cityId: 'pv' as const,
@@ -115,12 +117,36 @@ export default function Neighborhood() {
     }
   };
 
+  const getExpatSentiment = async () => {
+    setSentimentLoading(true);
+
+    try {
+      const response = await fetch('/api/expat_sentiment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ city: neighborhood.city })
+      });
+
+      const data = await response.json();
+      if (response.ok && !data.error) {
+        setSentimentData(data);
+      }
+    } catch (error) {
+      console.error('Fetch error:', error);
+    } finally {
+      setSentimentLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!eventData && !eventLoading) {
       getSeasonalContent();
     }
     if (!heroData && !heroLoading) {
       getNeighborhoodHero();
+    }
+    if (!sentimentData && !sentimentLoading) {
+      getExpatSentiment();
     }
   }, [neighborhood.cityId]);
 
@@ -452,6 +478,48 @@ export default function Neighborhood() {
                     
                     {!eventData && !eventLoading && (
                       <p className="text-muted-foreground">Local events feed offline.</p>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Live Expat Sentiment Index Card (Task #14) */}
+                <Card data-testid="card-expat-sentiment" className="col-span-1 lg:col-span-2">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-xl">
+                      <TrendingUp className="w-5 h-5 text-green-400" />
+                      Live Expat Sentiment Index
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    {sentimentLoading && <p className="text-center text-primary">Calculating community vibe...</p>}
+                    
+                    {sentimentData && (
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                        <div className="md:col-span-1 flex justify-center">
+                          <div className="relative w-32 h-32 flex items-center justify-center rounded-full bg-green-500/20">
+                            <p className="text-6xl font-extrabold text-green-400" data-testid="text-sentiment-score">
+                              {sentimentData.score}
+                            </p>
+                            <span className="absolute bottom-2 right-2 text-sm text-green-400">/100</span>
+                          </div>
+                        </div>
+                        
+                        <div className="md:col-span-2 space-y-2">
+                          <p className="text-lg font-semibold text-foreground">
+                            Current Vibe: {sentimentData.score >= 85 ? 'Strongly Positive' : 'Generally Positive'}
+                          </p>
+                          <p className="text-muted-foreground italic" data-testid="text-sentiment-summary">
+                            "{sentimentData.summary}"
+                          </p>
+                          <p className="text-xs text-primary/70">
+                            *Score based on synthesized analysis of recent expat discussions.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {!sentimentData && !sentimentLoading && (
+                      <p className="text-muted-foreground">Expat sentiment feed offline.</p>
                     )}
                   </CardContent>
                 </Card>
