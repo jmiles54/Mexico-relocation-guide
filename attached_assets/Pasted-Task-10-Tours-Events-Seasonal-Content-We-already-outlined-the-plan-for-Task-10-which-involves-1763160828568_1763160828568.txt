@@ -1,0 +1,141 @@
+Task #10: Tours, Events & Seasonal Content
+We already outlined the plan for Task #10, which involves using a specialized Groq LLM endpoint to generate real-time cultural event and tour recommendations, making the portal feel dynamic.
+
+Your Final Action is to implement the necessary code we designed in the last instruction set.
+
+1. Backend Endpoint (server/routes.ts)
+Add the /api/seasonal_content route to your Node.js server.
+
+TypeScript
+
+// server/routes.ts (ADD THIS ROUTE)
+
+// Tours, Events & Seasonal Content API endpoint (Task #10)
+app.post('/api/seasonal_content', async (req, res) => {
+    try {
+        const { city } = req.body;
+
+        if (!city) {
+            return res.status(400).json({ error: "Missing city parameter." });
+        }
+
+        const apiKey = process.env.GROQ_API_KEY;
+        if (!apiKey) {
+            return res.status(503).json({ error: "Groq API key not found." });
+        }
+
+        // Initialize Groq client
+        const groq = new Groq({ apiKey });
+
+        const systemPrompt = (
+            "You are an expert concierge and travel guide for Mexico. " +
+            "Your task is to generate one compelling, real-time cultural event, " +
+            "tour, or seasonal highlight for the provided city. The output should be realistic, " +
+            "attraction-focused, and encourage booking. Output ONLY a JSON object with two fields: " +
+            "'headline' (short, exciting event name or tour title) and " +
+            "'description' (a 2-3 sentence pitch including relevance to expats and a call to action)."
+        );
+
+        const completion = await groq.chat.completions.create({
+            model: "llama-3.3-70b-versatile",
+            messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: `What is the best current event or tour in ${city} right now? (Current month is ${new Date().toLocaleString('en-US', { month: 'long' })})` }
+            ],
+            response_format: { type: "json_object" }
+        });
+
+        const jsonResponseText = completion.choices[0].message.content?.trim() || "{}";
+        const eventData = JSON.parse(jsonResponseText);
+
+        return res.json(eventData);
+
+    } catch (error: any) {
+        console.error('Seasonal Content API Error:', error);
+        return res.status(500).json({ error: 'AI event synthesis failed to process request.' });
+    }
+});
+2. Frontend Integration (client/src/pages/Neighborhood.tsx)
+Add the state, handler, and the new UI card to your city detail view.
+
+State, Handler, and useEffect
+TypeScript
+
+// client/src/pages/Neighborhood.tsx (Add to State and Handlers near the top)
+// NOTE: Make sure to import useEffect and useState if not already done.
+
+// New State for Events/Tours
+const [eventLoading, setEventLoading] = useState(false);
+const [eventData, setEventData] = useState<{headline: string; description: string} | null>(null);
+
+// New Handler
+const getSeasonalContent = async () => {
+    setEventLoading(true);
+
+    try {
+        const response = await fetch('/api/seasonal_content', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ city: neighborhood.city })
+        });
+        
+        const data = await response.json();
+        if (response.ok && !data.error) {
+            setEventData(data);
+        }
+    } catch (error) {
+        console.error('Fetch error:', error);
+    } finally {
+        setEventLoading(false);
+    }
+};
+
+// Update the main useEffect hook to fetch this data on load
+useEffect(() => {
+    // Check if event data should be fetched
+    if (!eventData && !eventLoading) {
+        getSeasonalContent(); 
+    }
+    // Existing useEffect logic for other initial fetches (e.g., getCommunityConsensus) should also be here.
+}, [neighborhood.cityId]); 
+UI Card
+Place this new card within the Overview Tab of Neighborhood.tsx, ideally near the Community Consensus card for visual grouping.
+
+TypeScript
+
+// client/src/pages/Neighborhood.tsx (Inside <TabsContent value="overview">)
+
+{/* Current Conditions & Highlights Section (where your WeatherWidget and other highlights are) */}
+<section>
+  <h2 className="text-2xl font-bold mb-6">Current Conditions & Highlights</h2>
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    {/* WeatherWidget and Why Live Here card */}
+    
+    {/* Tours & Events Card (Task #10) */}
+    <Card data-testid="card-seasonal-content">
+        <CardContent className="p-6">
+            {eventLoading && <p className="text-center text-yellow-500">Generating latest event data...</p>}
+            
+            {eventData && (
+                <div className="space-y-3">
+                    <h3 className="text-xl font-bold text-primary">{eventData.headline}</h3>
+                    <p className="text-muted-foreground">
+                        {eventData.description}
+                    </p>
+                    {/* Placeholder for Call to Action */}
+                    <a href="#" className="inline-flex items-center text-sm font-semibold text-blue-400 hover:text-blue-300">
+                        View Details →
+                    </a>
+                </div>
+            )}
+            
+            {!eventData && !eventLoading && (
+                <p className="text-muted-foreground">Local events feed offline.</p>
+            )}
+        </CardContent>
+    </Card>
+    
+  </div>
+</section>
+Final Step
+Implement the code above. Once you visit a city detail page, this card should auto-load an engaging, real-time cultural highlight, making Task #10 complete!

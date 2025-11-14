@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -24,6 +24,8 @@ export default function Neighborhood() {
   const [seniorScoreLoading, setSeniorScoreLoading] = useState(false);
   const [seniorScoreData, setSeniorScoreData] = useState<{score: number; justification: string} | null>(null);
   const [seniorScoreError, setSeniorScoreError] = useState<string | null>(null);
+  const [eventLoading, setEventLoading] = useState(false);
+  const [eventData, setEventData] = useState<{headline: string; description: string} | null>(null);
   
   const neighborhood = {
     cityId: 'pv' as const,
@@ -65,6 +67,33 @@ export default function Neighborhood() {
       setSeniorScoreLoading(false);
     }
   };
+
+  const getSeasonalContent = async () => {
+    setEventLoading(true);
+
+    try {
+      const response = await fetch('/api/seasonal_content', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ city: neighborhood.city })
+      });
+      
+      const data = await response.json();
+      if (response.ok && !data.error) {
+        setEventData(data);
+      }
+    } catch (error) {
+      console.error('Fetch error:', error);
+    } finally {
+      setEventLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!eventData && !eventLoading) {
+      getSeasonalContent();
+    }
+  }, [neighborhood.cityId]);
 
   const costItems = [
     {
@@ -346,6 +375,29 @@ export default function Neighborhood() {
                         </p>
                       </div>
                     </div>
+                  </CardContent>
+                </Card>
+
+                {/* Tours & Events Card (Task #10) */}
+                <Card data-testid="card-seasonal-content">
+                  <CardContent className="p-6">
+                    {eventLoading && <p className="text-center text-yellow-500">Generating latest event data...</p>}
+                    
+                    {eventData && (
+                      <div className="space-y-3">
+                        <h3 className="text-xl font-bold text-primary" data-testid="text-event-headline">{eventData.headline}</h3>
+                        <p className="text-muted-foreground" data-testid="text-event-description">
+                          {eventData.description}
+                        </p>
+                        <a href="#" className="inline-flex items-center text-sm font-semibold text-blue-400 hover:text-blue-300" data-testid="link-event-details">
+                          View Details →
+                        </a>
+                      </div>
+                    )}
+                    
+                    {!eventData && !eventLoading && (
+                      <p className="text-muted-foreground">Local events feed offline.</p>
+                    )}
                   </CardContent>
                 </Card>
               </div>

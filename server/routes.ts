@@ -109,6 +109,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Tours, Events & Seasonal Content API endpoint (Task #10)
+  app.post('/api/seasonal_content', async (req, res) => {
+    try {
+      const { city } = req.body;
+
+      if (!city) {
+        return res.status(400).json({ error: "Missing city parameter." });
+      }
+
+      const apiKey = process.env.GROQ_API_KEY;
+      if (!apiKey) {
+        return res.status(503).json({ error: "Groq API key not found." });
+      }
+
+      // Initialize Groq client
+      const groq = new Groq({ apiKey });
+
+      const systemPrompt = (
+        "You are an expert concierge and travel guide for Mexico. " +
+        "Your task is to generate one compelling, real-time cultural event, " +
+        "tour, or seasonal highlight for the provided city. The output should be realistic, " +
+        "attraction-focused, and encourage booking. Output ONLY a JSON object with two fields: " +
+        "'headline' (short, exciting event name or tour title) and " +
+        "'description' (a 2-3 sentence pitch including relevance to expats and a call to action)."
+      );
+
+      const completion = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: `What is the best current event or tour in ${city} right now? (Current month is ${new Date().toLocaleString('en-US', { month: 'long' })})` }
+        ],
+        response_format: { type: "json_object" }
+      });
+
+      const jsonResponseText = completion.choices[0].message.content?.trim() || "{}";
+      const eventData = JSON.parse(jsonResponseText);
+
+      return res.json(eventData);
+
+    } catch (error: any) {
+      console.error('Seasonal Content API Error:', error);
+      return res.status(500).json({ error: 'AI event synthesis failed to process request.' });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
