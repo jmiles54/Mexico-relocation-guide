@@ -4,11 +4,6 @@ import { storage } from "./storage";
 import Groq from "groq-sdk";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Initialize Groq client
-  const groq = new Groq({
-    apiKey: process.env.GROQ_API_KEY
-  });
-
   // Senior Comfort Score API endpoint
   app.post('/api/senior_score', async (req, res) => {
     try {
@@ -17,6 +12,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!city) {
         return res.status(400).json({ error: "Missing city parameter in request body." });
       }
+
+      // Check if API key is available
+      if (!process.env.GROQ_API_KEY) {
+        return res.status(503).json({ 
+          error: "GROQ_API_KEY is not configured. Please add your Groq API key in the Secrets panel." 
+        });
+      }
+
+      // Initialize Groq client (lazy initialization)
+      const groq = new Groq({
+        apiKey: process.env.GROQ_API_KEY
+      });
 
       const systemPrompt = (
         "You are an expert relocation consultant for seniors (55-80) moving to Mexico. " +
