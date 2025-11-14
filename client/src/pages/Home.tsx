@@ -3,9 +3,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Search, MapPin, Waves, Quote } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import NeighborhoodCard from "@/components/NeighborhoodCard";
-import { useFavorites } from '../hooks/useFavorites';
 import SocialProofBadge from '../components/SocialProofBadge';
 import heroImage from '@assets/stock_images/puerto_vallarta_mexi_37c839b6.jpg';
 import zonaImage from '@assets/stock_images/zona_romantica_puert_63220432.jpg';
@@ -15,39 +14,11 @@ import pitillalImage from '@assets/stock_images/colorful_street_colo_1e0fdd01.jp
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
-  const { getCommunityPicks } = useFavorites();
-  const communityPicks = getCommunityPicks();
+  const [citySentiments, setCitySentiments] = useState<Record<string, string>>({});
 
   const handleSearch = () => {
     console.log('Searching for:', searchQuery);
   };
-
-  const testimonials = [
-    {
-      text: "Now I have more friends in Vallarta than I ever have had in all my life",
-      author: "Jay, Retiree"
-    },
-    {
-      text: "Four years later, Puerto Vallarta feels more like home than anywhere else I've lived",
-      author: "Digital Nomad from Toronto"
-    },
-    {
-      text: "I used to pay double for half the space",
-      author: "Toronto Expat"
-    },
-    {
-      text: "After buying our condo, we have never been happier or so free of financial worries",
-      author: "Retired Couple"
-    },
-    {
-      text: "Street tacos under $2, 20-minute Uber rides for a few dollars",
-      author: "Multiple Expats"
-    },
-    {
-      text: "I have never looked back",
-      author: "Meagan, Relocated 2013"
-    }
-  ];
 
   const featuredNeighborhoods = [
     {
@@ -93,6 +64,63 @@ export default function Home() {
       expatRating: 4,
       walkability: 5,
       beachDistance: "40 min bus"
+    }
+  ];
+
+  const fetchAllSentiments = async () => {
+    const citiesToFetch = Array.from(new Set(featuredNeighborhoods.map(n => n.city)));
+    
+    const results = await Promise.all(citiesToFetch.map(async (city) => {
+      try {
+        const response = await fetch('/api/city_sentiment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ city })
+        });
+        const data = await response.json();
+        return { city, label: data.label };
+      } catch (error) {
+        console.error(`Error fetching sentiment for ${city}:`, error);
+        return { city, label: 'Local Favorite' };
+      }
+    }));
+
+    const sentimentMap = results.reduce((acc, result) => {
+      acc[result.city] = result.label;
+      return acc;
+    }, {} as Record<string, string>);
+
+    setCitySentiments(sentimentMap);
+  };
+
+  useEffect(() => {
+    fetchAllSentiments();
+  }, []);
+
+  const testimonials = [
+    {
+      text: "Now I have more friends in Vallarta than I ever have had in all my life",
+      author: "Jay, Retiree"
+    },
+    {
+      text: "Four years later, Puerto Vallarta feels more like home than anywhere else I've lived",
+      author: "Digital Nomad from Toronto"
+    },
+    {
+      text: "I used to pay double for half the space",
+      author: "Toronto Expat"
+    },
+    {
+      text: "After buying our condo, we have never been happier or so free of financial worries",
+      author: "Retired Couple"
+    },
+    {
+      text: "Street tacos under $2, 20-minute Uber rides for a few dollars",
+      author: "Multiple Expats"
+    },
+    {
+      text: "I have never looked back",
+      author: "Meagan, Relocated 2013"
     }
   ];
 
@@ -156,12 +184,12 @@ export default function Home() {
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {featuredNeighborhoods.map((neighborhood, index) => {
-            const communityData = communityPicks.find(p => p.id === neighborhood.cityId);
+            const dynamicLabel = citySentiments[neighborhood.city];
             
             return (
               <div key={index} className="relative">
-                {communityData && (
-                  <SocialProofBadge label={communityData.label} />
+                {dynamicLabel && (
+                  <SocialProofBadge label={dynamicLabel} />
                 )}
                 <NeighborhoodCard {...neighborhood} />
               </div>

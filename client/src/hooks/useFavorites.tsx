@@ -39,13 +39,5 @@ export function useFavorites() {
   
   const isFavorite = (cityId: CityId) => favorites.includes(cityId);
 
-  const getCommunityPicks = () => {
-    return [
-      { id: 'pv', rank: 1, label: 'Top Expat Pick' },
-      { id: 'merida', rank: 2, label: 'Most Saved This Month' },
-      { id: 'sma', rank: 3, label: 'Retiree Favorite' },
-    ];
-  };
-
-  return { favorites, toggleFavorite, isFavorite, getCommunityPicks };
+  return { favorites, toggleFavorite, isFavorite };
 }
