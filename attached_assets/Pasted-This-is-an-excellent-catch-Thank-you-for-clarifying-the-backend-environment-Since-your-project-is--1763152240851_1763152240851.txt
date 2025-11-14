@@ -1,0 +1,94 @@
+This is an excellent catch! Thank you for clarifying the backend environment. Since your project is using Node.js/Express and not Python/Flask, managing two separate backends is unnecessarily complex.
+
+The correct and cleanest approach is to:
+
+Implement the feature in the existing Node.js/Express backend
+This keeps your architecture unified, simpler to debug, and leverages the Node.js Groq SDK, which is just as fast and efficient.
+
+Here is the updated implementation plan for Task #8 (Senior Comfort Suite) using your Node.js/Express server.
+
+⚡️ Task #8: Groq Integration (Node.js/Express)
+Step 1: Install the Groq SDK
+Open your Replit terminal and run the following command to install the official Groq SDK for Node.js:
+
+Bash
+
+npm install groq-sdk
+Step 2: Implement the API Endpoint (server.js or app.js)
+In your main Node.js server file (e.g., server.js or app.js), you need to initialize the Groq client and create the Express route.
+
+JavaScript
+
+// --- Imports at the top of your server file ---
+// Ensure you have: const express = require('express'); 
+// (or import express from 'express' if using ES modules)
+const Groq = require('groq-sdk');
+// Ensure your server is set up to read environment variables (Replit does this automatically)
+
+// 1. Initialize the Groq Client
+// It securely reads the GROQ_API_KEY you saved in Replit Secrets Manager
+const groq = new Groq({
+    apiKey: process.env.GROQ_API_KEY // Automatically fetched from Replit Secrets
+});
+
+
+// 2. Create the Senior Scoring API Endpoint (The Groq Core)
+// Add this route *before* any catch-all routes that serve your frontend
+app.post('/api/senior_score', async (req, res) => {
+    // Get data from the front-end (city name)
+    const { city } = req.body;
+
+    if (!city) {
+        return res.status(400).json({ error: "Missing city parameter." });
+    }
+
+    // 3. Construct the Groq Prompt
+    const systemPrompt = (
+        "You are an expert relocation consultant for seniors (55-80) moving to Mexico. "
+        "Your task is to score the given city for 'Senior Comfort, Accessibility & Safety' "
+        "based on publicly available data (walkability, crime, hospital proximity, expatriate "
+        "support). Output ONLY a JSON object with two fields: 'score' (integer 0-100) and "
+        "'justification' (short 2-sentence explanation)."
+    );
+
+    const userPrompt = `Score ${city} for Senior Comfort, Accessibility & Safety.`;
+
+    // 4. Call Groq for instant inference
+    try {
+        const completion = await groq.chat.completions.create({
+            model: "mixtral-8x7b-32768", // Fastest and highly capable Groq model
+            messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userPrompt }
+            ],
+            response_format: { type: "json_object" } // Crucial for reliable JSON output
+        });
+
+        // 5. Parse and clean the JSON response text
+        const jsonResponseText = completion.choices[0].message.content.trim();
+        const scoreData = JSON.parse(jsonResponseText);
+
+        // 6. Return the data to the frontend
+        return res.json(scoreData);
+
+    } catch (error) {
+        console.error('Groq API Error:', error);
+        return res.status(500).json({ error: `Failed to process AI request: ${error.message}` });
+    }
+});
+
+// ... rest of your server code (e.g., app.listen, static file serving)
+Step 3: Verify the Frontend Call
+The React code in your Neighborhood.tsx that we prepared remains exactly the same, as it only needs to successfully fetch data from the /api/senior_score route:
+
+TypeScript
+
+// (In your Neighborhood.tsx, the getSeniorScore function)
+
+// ...
+const response = await fetch('/api/senior_score', {
+    method: 'POST',
+    // ... rest of the fetch code
+});
+// ...
+By completing these steps, your Node.js server will handle the Groq API call, maintaining a seamless, high-speed connection between your React frontend and the Groq LPU inference engine!
