@@ -13,24 +13,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Missing city parameter in request body." });
       }
 
-      // Debug: Log all environment variable keys that contain 'GROQ' or 'groq'
-      const groqKeys = Object.keys(process.env).filter(key => 
-        key.toLowerCase().includes('groq')
-      );
-      console.log('Environment keys containing "groq":', groqKeys);
-      console.log('GROQ_API_KEY exists?', !!process.env.GROQ_API_KEY);
-      console.log('GROQ_API_KEY value length:', process.env.GROQ_API_KEY?.length || 0);
+      // Get API key from Replit secret (named "Replit-RRM-Portal")
+      const apiKey = process.env['Replit-RRM-Portal'];
 
       // Check if API key is available
-      if (!process.env.GROQ_API_KEY) {
+      if (!apiKey) {
         return res.status(503).json({ 
-          error: "GROQ_API_KEY is not configured. Available env keys with 'groq': " + JSON.stringify(groqKeys)
+          error: "Groq API key not found. Please add 'Replit-RRM-Portal' secret in the Secrets panel."
         });
       }
 
       // Initialize Groq client (lazy initialization)
       const groq = new Groq({
-        apiKey: process.env.GROQ_API_KEY
+        apiKey: apiKey
       });
 
       const systemPrompt = (
