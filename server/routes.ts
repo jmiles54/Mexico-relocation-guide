@@ -13,13 +13,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Missing city parameter in request body." });
       }
 
-      // Get API key from Replit secret (named "Replit-RRM-Portal")
-      const apiKey = process.env['Replit-RRM-Portal'];
+      // Get API key from Replit secret
+      const apiKey = process.env.GROQ_API_KEY;
 
       // Check if API key is available
       if (!apiKey) {
         return res.status(503).json({ 
-          error: "Groq API key not found. Please add 'Replit-RRM-Portal' secret in the Secrets panel."
+          error: "Groq API key not found. Please add 'GROQ_API_KEY' secret in the Secrets panel."
         });
       }
 
