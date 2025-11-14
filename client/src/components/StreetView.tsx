@@ -124,26 +124,29 @@ export default function StreetView({
           <div className="flex flex-col items-center justify-center space-y-4 text-center">
             <AlertCircle className="w-12 h-12 text-muted-foreground" />
             <div>
-              <h3 className="text-lg font-semibold mb-2">Street View Unavailable</h3>
+              <h3 className="text-lg font-semibold mb-2">Street View Setup Needed</h3>
               <p className="text-sm text-muted-foreground mb-4">{error}</p>
-              {error.includes('API') && (
-                <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-md p-4 mb-4">
-                  <p className="text-sm text-blue-900 dark:text-blue-100">
-                    <strong>Setup Required:</strong> To enable Street View, ensure the following APIs are activated in your Google Cloud Console:
-                  </p>
-                  <ul className="text-sm text-blue-800 dark:text-blue-200 mt-2 space-y-1 text-left">
-                    <li>• Maps JavaScript API</li>
-                    <li>• Street View Static API</li>
-                  </ul>
-                </div>
-              )}
+              <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-md p-4 mb-4 text-left">
+                <p className="text-sm text-blue-900 dark:text-blue-100 font-semibold mb-2">
+                  Quick Fix:
+                </p>
+                <ol className="text-sm text-blue-800 dark:text-blue-200 space-y-2 ml-4">
+                  <li>1. Go to <a href="https://console.cloud.google.com/apis/library" target="_blank" className="underline">Google Cloud Console</a></li>
+                  <li>2. Search for "Maps JavaScript API" and click Enable</li>
+                  <li>3. Search for "Street View Static API" and click Enable</li>
+                  <li>4. Wait 1-2 minutes, then refresh this page</li>
+                </ol>
+                <p className="text-xs text-blue-700 dark:text-blue-300 mt-3">
+                  Your API key is already set up correctly - it just needs these two features turned on.
+                </p>
+              </div>
               <Button
                 variant="outline"
                 onClick={() => window.open(`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}`, '_blank')}
                 data-testid="button-open-google-maps"
               >
                 <ExternalLink className="w-4 h-4 mr-2" />
-                Open in Google Maps
+                View on Google Maps Instead
               </Button>
             </div>
           </div>
