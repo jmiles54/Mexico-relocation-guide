@@ -12,6 +12,7 @@ import WebcamFeed from "@/components/WebcamFeed";
 import ProximityCalculator from "@/components/ProximityCalculator";
 import MetricCard from "@/components/MetricCard";
 import MapView from "@/components/MapView";
+import StreetView from "@/components/StreetView";
 import zonaImage from '@assets/stock_images/colorful_street_colo_1e0fdd01.jpg';
 import wineBarImage from '@assets/stock_images/wine_bar_restaurant__5c42922c.jpg';
 import beachImage from '@assets/stock_images/puerto_vallarta_mexi_37c839b6.jpg';
@@ -367,10 +368,21 @@ export default function Neighborhood() {
 
           <TabsContent value="webcams" className="space-y-6">
             <div>
-              <h2 className="text-2xl font-bold mb-4">Live Webcam Feeds</h2>
+              <h2 className="text-2xl font-bold mb-4">Live Views & Street Exploration</h2>
               <p className="text-muted-foreground mb-6">
-                See real-time views of beaches, plazas, and key locations in Puerto Vallarta
+                See real-time beach conditions and explore the neighborhood at street level
               </p>
+              
+              <StreetView
+                lat={20.6055}
+                lng={-105.2365}
+                heading={90}
+                pitch={0}
+                zoom={1}
+                title="Zona Romántica Street View"
+              />
+              
+              <h3 className="text-xl font-semibold mt-8 mb-4">Live Webcam Feeds</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <WebcamFeed

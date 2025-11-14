@@ -41,6 +41,7 @@ Preferred communication style: Simple, everyday language.
 - Comparison tables with horizontal scroll on mobile
 - Interactive filters with sliders and checkboxes
 - Weather widgets and live webcam feeds
+- Google Street View integration for neighborhood exploration
 
 ### Backend Architecture
 
@@ -71,6 +72,12 @@ Preferred communication style: Simple, everyday language.
 No authentication system currently implemented. User schema exists but no login/session management in routes. Session infrastructure via `express-session` with `connect-pg-simple` for PostgreSQL session storage is installed but not configured in codebase.
 
 ### External Dependencies
+
+**Maps & Geolocation**:
+- Google Maps JavaScript API for Street View panoramas
+- TypeScript types via `@types/google.maps`
+- API key via `VITE_GOOGLE_MAPS_API_KEY` environment variable
+- **Required Google Cloud APIs**: Maps JavaScript API, Street View Static API
 
 **UI Component Libraries**:
 - Radix UI primitives for accessible, unstyled components (accordion, dialog, dropdown, etc.)

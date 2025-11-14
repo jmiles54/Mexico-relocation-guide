@@ -1,0 +1,48 @@
+Replit Instructions for Task #5: Street View EmbedsWe will be modifying your primary HTML file (likely named mexico-relocation-4city-updated.html or index.html).Step 1: Securely Fetch the Google Maps API KeyWhile the API key will ultimately be used in the public HTML, we'll use a tiny piece of JavaScript on the frontend to reference the key we stored in the secrets (which Replit's server injects into the environment), ensuring your source HTML file remains clean.1. Create a Key Placeholder:The Google Maps Embed API requires the key to be appended to the URL. For simplicity in a static HTML file, we'll use a client-side JavaScript function to build the final, secure iframe URL when the user loads the page.2. Add a Script to Manage the Key:Inside your <script> tag at the bottom of your HTML file, add a function to get and use the API key. Since we are using an embed URL, the key should be included in the src.JavaScript// --- Function to build the Street View URL ---
+function getStreetViewSrc(lat, lon, heading, pitch, fov) {
+    // Note: The Maps Embed API is generally restricted by referrer (your domain),
+    // and for security, the API key must be placed directly in the URL here.
+    // If you are using Replit's server to serve a variable, you would do this:
+    
+    // For local testing, you might hardcode the key for a moment, but for deployment, 
+    // it must be securely handled if you were using a server-side language.
+    
+    // **For this front-end only task, we'll use the URL structure.**
+    // **You will need to manually replace YOUR_API_KEY_HERE in the HTML below.** // The following is the standard Maps Embed API format for Street View mode:
+    const baseUrl = 'https://www.google.com/maps/embed/v1/streetview';
+    const apiKey = 'YOUR_GOOGLE_MAPS_API_KEY_HERE'; // **MUST BE REPLACED MANUALLY IN THE HTML**
+    
+    return `${baseUrl}?key=${apiKey}&location=${lat},${lon}&heading=${heading}&pitch=${pitch}&fov=${fov}`;
+}
+Step 2: Implement the Street View EmbedsFind the section in your HTML file where the city details are displayed (e.g., inside the modal or detail card for Puerto Vallarta). We need to select two prime locations for each of your four cities to demonstrate the "Real Street View Sets."Replace the existing image/placeholder content with the following iframe structure.Puerto Vallarta (PV) ExampleUse this code block in the Puerto Vallarta city section. Remember to manually substitute YOUR_GOOGLE_MAPS_API_KEY_HERE with the actual key value from your Replit secrets for this public-facing feature.HTML<div class="street-view-set" id="pv-street-views">
+    <h2>Real-Time Neighborhood Views (Task #5)</h2>
+    
+    <div class="street-view-container">
+        <h4 class="neighborhood-title">El Centro (Historic Area)</h4>
+        <p class="neighborhood-description">See the charm and bustle of PV's downtown life.</p>
+        <iframe
+            width="100%"
+            height="300"
+            style="border:0;"
+            loading="lazy"
+            allowfullscreen
+            referrerpolicy="no-referrer-when-downgrade"
+            src="https://www.google.com/maps/embed/v1/streetview?key=YOUR_GOOGLE_MAPS_API_KEY_HERE&location=20.613380,-105.234320&heading=270&pitch=10&fov=90">
+        </iframe>
+    </div>
+
+    <div class="street-view-container" style="margin-top: 30px;">
+        <h4 class="neighborhood-title">Romantic Zone (ZR)</h4>
+        <p class="neighborhood-description">A view near Basilio Badillo and the beach access.</p>
+        <iframe
+            width="100%"
+            height="300"
+            style="border:0;"
+            loading="lazy"
+            allowfullscreen
+            referrerpolicy="no-referrer-when-downgrade"
+            src="https://www.google.com/maps/embed/v1/streetview?key=YOUR_GOOGLE_MAPS_API_KEY_HERE&location=20.603099,-105.238302&heading=150&pitch=0&fov=100">
+        </iframe>
+    </div>
+</div>
+Street View Data for the Other CitiesTo complete the task, here are sample coordinates for the other three cities. You would repeat the HTML block above, replacing the city name and the location coordinates.CityLocationLatitude, LongitudeMéridaSantiago Neighborhood Square20.970176, -89.630960MéridaPaseo de Montejo (Main Street)20.988229, -89.620399San Miguel de AllendeEl Jardín (Central Square)20.915720, -100.744158San Miguel de AllendeFábrica La Aurora (Art Center)20.923836, -100.741009CancúnHotel Zone Beach Access21.149257, -86.772583CancúnDowntown Parque las Palapas21.164620, -86.829158
