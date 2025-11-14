@@ -204,94 +204,105 @@ export default function Neighborhood() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <MetricCard
-                icon={DollarSign}
-                label="Affordability"
-                value={72}
-                trend="18% better than avg"
-                trendDirection="up"
-                variant="success"
-              />
-              <MetricCard
-                icon={Users}
-                label="Expat Community"
-                value="9/10"
-                trend="Very active"
-                variant="default"
-              />
-              <MetricCard
-                icon={Shield}
-                label="Safety Rating"
-                value={81}
-                trend="High"
-                variant="success"
-              />
-              <MetricCard
-                icon={Sun}
-                label="Climate"
-                value="30°C"
-                trend="Tropical"
-                variant="warning"
-              />
-            </div>
+          <TabsContent value="overview" className="space-y-8">
+            {/* Key Metrics */}
+            <section>
+              <h2 className="text-2xl font-bold mb-6">Key Metrics</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <MetricCard
+                  icon={DollarSign}
+                  label="Affordability"
+                  value={72}
+                  trend="18% better than avg"
+                  trendDirection="up"
+                  variant="success"
+                />
+                <MetricCard
+                  icon={Users}
+                  label="Expat Community"
+                  value="9/10"
+                  trend="Very active"
+                  variant="default"
+                />
+                <MetricCard
+                  icon={Shield}
+                  label="Safety Rating"
+                  value={81}
+                  trend="High"
+                  variant="success"
+                />
+                <MetricCard
+                  icon={Sun}
+                  label="Climate"
+                  value="30°C"
+                  trend="Tropical"
+                  variant="warning"
+                />
+              </div>
+            </section>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <WeatherWidget
-                location="Zona Romántica"
-                currentTemp={30}
-                condition="sunny"
-                humidity={65}
-                windSpeed={12}
-                forecast={forecast}
-              />
-              
+            {/* Weather & Highlights */}
+            <section>
+              <h2 className="text-2xl font-bold mb-6">Current Conditions & Highlights</h2>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <WeatherWidget
+                  location="Zona Romántica"
+                  currentTemp={30}
+                  condition="sunny"
+                  humidity={65}
+                  windSpeed={12}
+                  forecast={forecast}
+                />
+                
+                <Card>
+                  <CardContent className="p-6">
+                    <h3 className="text-xl font-semibold mb-4">Why Live Here?</h3>
+                    <div className="space-y-4 text-sm">
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Waves className="w-4 h-4 text-primary" />
+                          <h4 className="font-semibold">Beach Access</h4>
+                        </div>
+                        <p className="text-muted-foreground">
+                          3-minute walk to Playa Olas Altas. Prime beachfront location with easy access to all coastal activities.
+                        </p>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Users className="w-4 h-4 text-primary" />
+                          <h4 className="font-semibold">Expat Community</h4>
+                        </div>
+                        <p className="text-muted-foreground">
+                          Highly active expat scene with 9 weekly meetups, wine bars, and social venues popular with 50+ crowd.
+                        </p>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Coffee className="w-4 h-4 text-primary" />
+                          <h4 className="font-semibold">Dining Scene</h4>
+                        </div>
+                        <p className="text-muted-foreground">
+                          Mix of local fondas (90 MXN menu del día) and upscale restaurants. Easy walking to all amenities.
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </section>
+
+            {/* Neighborhood Image */}
+            <section>
               <Card>
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-semibold mb-4">Neighborhood Highlights</h3>
-                  <div className="space-y-4 text-sm">
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Waves className="w-4 h-4 text-primary" />
-                        <h4 className="font-semibold">Beach Access</h4>
-                      </div>
-                      <p className="text-muted-foreground">
-                        3-minute walk to Playa Olas Altas. Prime beachfront location with easy access to all coastal activities.
-                      </p>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Users className="w-4 h-4 text-primary" />
-                        <h4 className="font-semibold">Expat Community</h4>
-                      </div>
-                      <p className="text-muted-foreground">
-                        Highly active expat scene with 9 weekly meetups, wine bars, and social venues popular with 50+ crowd.
-                      </p>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Coffee className="w-4 h-4 text-primary" />
-                        <h4 className="font-semibold">Dining Scene</h4>
-                      </div>
-                      <p className="text-muted-foreground">
-                        Mix of local fondas (90 MXN menu del día) and upscale restaurants. Easy walking to all amenities.
-                      </p>
-                    </div>
-                  </div>
+                <CardContent className="p-0">
+                  <img
+                    src={zonaImage}
+                    alt="Zona Romántica street view"
+                    className="w-full h-80 object-cover"
+                  />
                 </CardContent>
               </Card>
-            </div>
-
-            <Card>
-              <CardContent className="p-0">
-                <img
-                  src={zonaImage}
-                  alt="Zona Romántica street view"
-                  className="w-full h-64 object-cover rounded-lg"
-                />
-              </CardContent>
-            </Card>
+            </section>
           </TabsContent>
 
           <TabsContent value="costs">
@@ -299,7 +310,7 @@ export default function Neighborhood() {
           </TabsContent>
 
           <TabsContent value="social" className="space-y-6">
-            <div>
+            <section>
               <h2 className="text-2xl font-bold mb-4">Expat Social Venues</h2>
               <p className="text-muted-foreground mb-6">
                 Wine bars, restaurants, and cafés popular with the expat community
@@ -310,7 +321,7 @@ export default function Neighborhood() {
                   <VenueCard key={venue.id} {...venue} />
                 ))}
               </div>
-            </div>
+            </section>
           </TabsContent>
 
           <TabsContent value="safety">
@@ -366,11 +377,12 @@ export default function Neighborhood() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="webcams" className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold mb-4">Live Views & Street Exploration</h2>
+          <TabsContent value="webcams" className="space-y-8">
+            {/* Street View Section */}
+            <section>
+              <h2 className="text-2xl font-bold mb-4">Virtual Street Exploration</h2>
               <p className="text-muted-foreground mb-6">
-                See real-time beach conditions and explore the neighborhood at street level
+                Explore the neighborhood at street level with 360° panoramic views
               </p>
               
               <StreetView
@@ -381,8 +393,14 @@ export default function Neighborhood() {
                 zoom={1}
                 title="Zona Romántica Street View"
               />
+            </section>
               
-              <h3 className="text-xl font-semibold mt-8 mb-4">Live Webcam Feeds</h3>
+            {/* Webcams Section */}
+            <section>
+              <h2 className="text-2xl font-bold mb-4">Live Webcam Feeds</h2>
+              <p className="text-muted-foreground mb-6">
+                Real-time beach conditions and weather
+              </p>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <WebcamFeed
@@ -462,23 +480,34 @@ export default function Neighborhood() {
                   </CardContent>
                 </Card>
               </div>
-
-            </div>
+            </section>
           </TabsContent>
 
-          <TabsContent value="proximity" className="space-y-6">
-            <MapView
-              neighborhoodName="Zona Romántica"
-              centerLat={20.6055}
-              centerLng={-105.2365}
-              venues={mapVenues}
-              boundary={zonaRomanticaBoundary}
-            />
+          <TabsContent value="proximity" className="space-y-8">
+            <section>
+              <h2 className="text-2xl font-bold mb-4">Neighborhood Map</h2>
+              <p className="text-muted-foreground mb-6">
+                Interactive map showing key venues, beaches, and amenities
+              </p>
+              <MapView
+                neighborhoodName="Zona Romántica"
+                centerLat={20.6055}
+                centerLng={-105.2365}
+                venues={mapVenues}
+                boundary={zonaRomanticaBoundary}
+              />
+            </section>
             
-            <ProximityCalculator
-              neighborhoodName="Zona Romántica"
-              items={proximityItems}
-            />
+            <section>
+              <h2 className="text-2xl font-bold mb-4">Distance Calculator</h2>
+              <p className="text-muted-foreground mb-6">
+                How far are you from the places you care about?
+              </p>
+              <ProximityCalculator
+                neighborhoodName="Zona Romántica"
+                items={proximityItems}
+              />
+            </section>
           </TabsContent>
         </Tabs>
       </div>
