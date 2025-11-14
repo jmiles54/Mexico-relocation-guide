@@ -32,9 +32,19 @@ export default function StreetView({
         return;
       }
 
+      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+      
+      if (!apiKey) {
+        setError('Google Maps API key not found in environment variables');
+        setIsLoading(false);
+        return;
+      }
+
+      console.log('Loading Google Maps with API key:', apiKey.substring(0, 10) + '...');
+
       const script = document.createElement('script');
       script.id = 'google-maps-script';
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&libraries=places`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
       script.async = true;
       script.defer = true;
       script.onload = () => initializeStreetView();
