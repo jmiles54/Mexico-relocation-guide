@@ -2,8 +2,10 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, ArrowLeft, Waves, Users, Coffee, DollarSign, Shield, Sun, Video, ExternalLink, Heart, Zap, Scale, TrendingUp } from "lucide-react";
+import { MapPin, ArrowLeft, Waves, Users, Coffee, DollarSign, Shield, Sun, Video, ExternalLink, Heart, Zap, Scale, TrendingUp, Thermometer, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Link } from "wouter";
 import WeatherWidget from "@/components/WeatherWidget";
 import CostBreakdown from "@/components/CostBreakdown";
@@ -30,6 +32,12 @@ export default function Neighborhood() {
   const [heroData, setHeroData] = useState<{subHeadline: string; insight: string} | null>(null);
   const [sentimentLoading, setSentimentLoading] = useState(false);
   const [sentimentData, setSentimentData] = useState<{score: number; summary: string} | null>(null);
+  const [climateLoading, setClimateLoading] = useState(false);
+  const [climateData, setClimateData] = useState<{fitScore: number; justification: string} | null>(null);
+  const [maxTempInput, setMaxTempInput] = useState('85');
+  const [minTempInput, setMinTempInput] = useState('65');
+  const [humidityInput, setHumidityInput] = useState('Low');
+  const [climateError, setClimateError] = useState<string | null>(null);
   
   const neighborhood = {
     cityId: 'pv' as const,
@@ -135,6 +143,37 @@ export default function Neighborhood() {
       console.error('Fetch error:', error);
     } finally {
       setSentimentLoading(false);
+    }
+  };
+
+  const calculateClimateFit = async () => {
+    setClimateLoading(true);
+    setClimateError(null);
+    setClimateData(null);
+
+    try {
+      const response = await fetch('/api/climate_fit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          city: neighborhood.city,
+          maxTemp: maxTempInput,
+          minTemp: minTempInput,
+          humidityPreference: humidityInput,
+        })
+      });
+
+      const data = await response.json();
+      if (!response.ok || data.error) {
+        throw new Error(data.error || 'Failed to calculate climate fit.');
+      }
+      
+      setClimateData(data);
+
+    } catch (error: any) {
+      setClimateError(error.message || 'Error connecting to climate engine.');
+    } finally {
+      setClimateLoading(false);
     }
   };
 
@@ -521,6 +560,68 @@ export default function Neighborhood() {
                     {!sentimentData && !sentimentLoading && (
                       <p className="text-muted-foreground">Expat sentiment feed offline.</p>
                     )}
+                  </CardContent>
+                </Card>
+
+                {/* Hyper-Local Climate Fit Score Section (Task #15) */}
+                <Card data-testid="card-climate-fit" className="col-span-1 lg:col-span-2">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-xl">
+                      <Thermometer className="w-5 h-5 text-blue-400" />
+                      Hyper-Local Climate Fit Score
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                      <div className="lg:col-span-3 space-y-4">
+                        <p className="text-sm text-muted-foreground">
+                          Define your ideal climate to see how well {neighborhood.city} matches your long-term comfort profile.
+                        </p>
+                        <form onSubmit={(e) => { e.preventDefault(); calculateClimateFit(); }} className="space-y-4">
+                          <div className="grid grid-cols-3 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="maxTemp">Max Avg Temp (°F)</Label>
+                              <Input id="maxTemp" type="number" value={maxTempInput} onChange={(e) => setMaxTempInput(e.target.value)} required min={50} max={110} data-testid="input-max-temp" />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="minTemp">Min Avg Temp (°F)</Label>
+                              <Input id="minTemp" type="number" value={minTempInput} onChange={(e) => setMinTempInput(e.target.value)} required min={30} max={80} data-testid="input-min-temp" />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="humidity">Humidity Vibe</Label>
+                              <Input id="humidity" type="text" value={humidityInput} onChange={(e) => setHumidityInput(e.target.value)} placeholder="Low, Moderate, High" required data-testid="input-humidity" />
+                            </div>
+                          </div>
+                          
+                          {climateError && <p className="text-sm text-destructive" data-testid="text-climate-error">{climateError}</p>}
+                          
+                          <Button type="submit" className="w-full" disabled={climateLoading} data-testid="button-calculate-fit">
+                            {climateLoading ? 'Analyzing 30 Years of Data...' : (
+                              <>
+                                Calculate Fit Score <ChevronRight className="w-4 h-4 ml-2" />
+                              </>
+                            )}
+                          </Button>
+                        </form>
+                      </div>
+
+                      <div className={`lg:col-span-2 p-4 rounded-lg flex flex-col justify-center items-center text-center ${climateData ? 'bg-blue-500/10 border border-blue-500/50' : 'bg-muted/50'}`}>
+                        {climateData ? (
+                          <div className="space-y-3">
+                            <p className="text-7xl font-extrabold text-blue-400" data-testid="text-fit-score">
+                              {climateData.fitScore}%
+                            </p>
+                            <p className="text-sm text-muted-foreground italic" data-testid="text-fit-justification">
+                              "{climateData.justification}"
+                            </p>
+                          </div>
+                        ) : (
+                          <p className="text-muted-foreground py-4">
+                            Enter your temperature ranges and humidity preference to get an instant Climate Fit Score.
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               </div>

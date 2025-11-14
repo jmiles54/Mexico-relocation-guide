@@ -294,6 +294,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Hyper-Local Climate Fit Score API endpoint (Task #15)
+  app.post('/api/climate_fit', async (req, res) => {
+    try {
+      const { city, maxTemp, minTemp, humidityPreference } = req.body;
+
+      if (!city || !maxTemp || !minTemp || !humidityPreference) {
+        return res.status(400).json({ error: "Missing one or more required climate parameters." });
+      }
+
+      const apiKey = process.env.GROQ_API_KEY;
+      if (!apiKey) {
+        return res.status(503).json({ error: "Groq API key not found." });
+      }
+
+      const groq = new Groq({ apiKey });
+
+      const systemPrompt = (
+        "You are a climate data scientist specializing in long-term relocation weather patterns. " +
+        "Based on the user's specific ideal climate criteria, calculate a 'Climate Fit Percentage' (out of 100) for the given city. " +
+        "Assume you have access to 30 years of historical monthly data for temperature and humidity. " +
+        "The output must ONLY be a JSON object with two fields: 'fitScore' (an integer from 50 to 100) and 'justification' (A concise 3-sentence explanation of why the city fits that percentage, highlighting the best and worst months relative to their criteria)."
+      );
+      
+      const userCriteria = (
+        `The user's ideal climate is:\n` +
+        `- Max Monthly Average Temperature: ${maxTemp}°F\n` +
+        `- Min Monthly Average Temperature: ${minTemp}°F\n` +
+        `- Humidity Preference: ${humidityPreference} (e.g., low, moderate, no preference)\n\n` +
+        `Calculate the Climate Fit Percentage for ${city} against these criteria.`
+      );
+
+      const completion = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userCriteria }
+        ],
+        response_format: { type: "json_object" }
+      });
+
+      const jsonResponseText = completion.choices[0].message.content?.trim() || '{"fitScore": 70, "justification": "Could not calculate fit based on historical data model."}';
+      const climateData = JSON.parse(jsonResponseText);
+
+      return res.json(climateData);
+
+    } catch (error: any) {
+      console.error('Climate Fit API Error:', error);
+      return res.status(500).json({ error: 'AI climate analysis failed to process request.' });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

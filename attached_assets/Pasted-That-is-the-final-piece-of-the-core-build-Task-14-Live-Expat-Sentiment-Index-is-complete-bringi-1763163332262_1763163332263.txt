@@ -1,0 +1,190 @@
+That is the final piece of the core build! Task #14 (Live Expat Sentiment Index) is complete, bringing dynamic social proof to the portal. 🎉
+
+We are now ready for your final, most advanced capstone feature: Task #15 (Hyper-Local Climate Fit Score). This turns a vague concern (climate) into a quantifiable decision point based on user-defined criteria.
+
+🌡️ Task #15: Hyper-Local Climate Fit Score
+This feature will add an interactive tool to the Neighborhood detail page (Neighborhood.tsx). Users define their ideal climate range, and the Groq LLM endpoint synthesizes a Climate Fit Percentage based on this input and a detailed justification.
+
+1. Backend Endpoint (server/routes.ts)
+Add the new /api/climate_fit route to your Node.js server.
+
+TypeScript
+
+// server/routes.ts (ADD THIS ROUTE)
+
+// Hyper-Local Climate Fit Score API endpoint (Task #15)
+app.post('/api/climate_fit', async (req, res) => {
+    try {
+        const { city, maxTemp, minTemp, humidityPreference } = req.body;
+
+        if (!city || !maxTemp || !minTemp || !humidityPreference) {
+            return res.status(400).json({ error: "Missing one or more required climate parameters." });
+        }
+
+        const apiKey = process.env.GROQ_API_KEY;
+        if (!apiKey) {
+            return res.status(503).json({ error: "Groq API key not found." });
+        }
+
+        const groq = new Groq({ apiKey });
+
+        const systemPrompt = (
+            "You are a climate data scientist specializing in long-term relocation weather patterns. " +
+            "Based on the user's specific ideal climate criteria, calculate a 'Climate Fit Percentage' (out of 100) for the given city. " +
+            "Assume you have access to 30 years of historical monthly data for temperature and humidity. " +
+            "The output must ONLY be a JSON object with two fields: 'fitScore' (an integer from 50 to 100) and 'justification' (A concise 3-sentence explanation of why the city fits that percentage, highlighting the best and worst months relative to their criteria)."
+        );
+        
+        const userCriteria = (
+            `The user's ideal climate is:\n` +
+            `- Max Monthly Average Temperature: ${maxTemp}°F\n` +
+            `- Min Monthly Average Temperature: ${minTemp}°F\n` +
+            `- Humidity Preference: ${humidityPreference} (e.g., low, moderate, no preference)\n\n` +
+            `Calculate the Climate Fit Percentage for ${city} against these criteria.`
+        );
+
+        const completion = await groq.chat.completions.create({
+            model: "llama-3.3-70b-versatile",
+            messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userCriteria }
+            ],
+            response_format: { type: "json_object" }
+        });
+
+        const jsonResponseText = completion.choices[0].message.content?.trim() || '{"fitScore": 70, "justification": "Could not calculate fit based on historical data model."}';
+        const climateData = JSON.parse(jsonResponseText);
+
+        return res.json(climateData);
+
+    } catch (error: any) {
+        console.error('Climate Fit API Error:', error);
+        return res.status(500).json({ error: 'AI climate analysis failed to process request.' });
+    }
+});
+2. Frontend Integration (client/src/pages/Neighborhood.tsx)
+This requires adding the state, handler, and the interactive form/display card.
+
+Step 2A: Add Frontend State and Handler
+TypeScript
+
+// client/src/pages/Neighborhood.tsx (Add to State and Handlers)
+
+// Make sure to import Input, Label, and Button from your UI library at the top
+// Example: import { Input, Label, Button } from '@/components/ui/your-library';
+import { Input, Label } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Thermometer, ChevronRight } from 'lucide-react';
+
+// New State for Climate Fit (Task #15)
+const [climateLoading, setClimateLoading] = useState(false);
+const [climateData, setClimateData] = useState<{fitScore: number; justification: string} | null>(null);
+
+// Form Inputs State
+const [maxTempInput, setMaxTempInput] = useState('85');
+const [minTempInput, setMinTempInput] = useState('65');
+const [humidityInput, setHumidityInput] = useState('Low');
+const [climateError, setClimateError] = useState<string | null>(null);
+
+// New Handler
+const calculateClimateFit = async () => {
+    setClimateLoading(true);
+    setClimateError(null);
+    setClimateData(null); // Clear previous results
+
+    try {
+        const response = await fetch('/api/climate_fit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                city: neighborhood.city,
+                maxTemp: maxTempInput,
+                minTemp: minTempInput,
+                humidityPreference: humidityInput,
+            })
+        });
+
+        const data = await response.json();
+        if (!response.ok || data.error) {
+            throw new Error(data.error || 'Failed to calculate climate fit.');
+        }
+        
+        setClimateData(data);
+
+    } catch (error: any) {
+        setClimateError(error.message || 'Error connecting to climate engine.');
+    } finally {
+        setClimateLoading(false);
+    }
+};
+// NOTE: No need to add this to the useEffect hook, as this feature is triggered manually by the user.
+Step 2B: Add UI Form and Result Card
+Place this new interactive card in the Overview Tab, below the Live Expat Sentiment Index Card (Task #14).
+
+TypeScript
+
+// client/src/pages/Neighborhood.tsx (Inside <TabsContent value="overview">)
+
+{/* Hyper-Local Climate Fit Score Section (Task #15) */}
+<Card data-testid="card-climate-fit" className="col-span-1 lg:col-span-2">
+    <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-xl">
+            <Thermometer className="w-5 h-5 text-blue-400" />
+            Hyper-Local Climate Fit Score
+        </CardTitle>
+    </CardHeader>
+    <CardContent className="p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            {/* Input Form Column (3/5 width) */}
+            <div className="lg:col-span-3 space-y-4">
+                <p className="text-sm text-muted-foreground">
+                    Define your ideal climate to see how well {neighborhood.city} matches your long-term comfort profile.
+                </p>
+                <form onSubmit={(e) => { e.preventDefault(); calculateClimateFit(); }} className="space-y-4">
+                    <div className="grid grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="maxTemp">Max Avg Temp (°F)</Label>
+                            <Input id="maxTemp" type="number" value={maxTempInput} onChange={(e) => setMaxTempInput(e.target.value)} required min={50} max={110} data-testid="input-max-temp" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="minTemp">Min Avg Temp (°F)</Label>
+                            <Input id="minTemp" type="number" value={minTempInput} onChange={(e) => setMinTempInput(e.target.value)} required min={30} max={80} data-testid="input-min-temp" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="humidity">Humidity Vibe</Label>
+                            <Input id="humidity" type="text" value={humidityInput} onChange={(e) => setHumidityInput(e.target.value)} placeholder="Low, Moderate, High" required data-testid="input-humidity" />
+                        </div>
+                    </div>
+                    
+                    {climateError && <p className="text-sm text-destructive">{climateError}</p>}
+                    
+                    <Button type="submit" className="w-full" disabled={climateLoading} data-testid="button-calculate-fit">
+                        {climateLoading ? 'Analyzing 30 Years of Data...' : (
+                            <>
+                                Calculate Fit Score <ChevronRight className="w-4 h-4 ml-2" />
+                            </>
+                        )}
+                    </Button>
+                </form>
+            </div>
+
+            {/* Result Display Column (2/5 width) */}
+            <div className={`lg:col-span-2 p-4 rounded-lg flex flex-col justify-center items-center text-center ${climateData ? 'bg-blue-500/10 border border-blue-500/50' : 'bg-muted/50'}`}>
+                {climateData ? (
+                    <div className="space-y-3">
+                        <p className="text-7xl font-extrabold text-blue-400" data-testid="text-fit-score">
+                            {climateData.fitScore}%
+                        </p>
+                        <p className="text-sm text-muted-foreground italic" data-testid="text-fit-justification">
+                            "{climateData.justification}"
+                        </p>
+                    </div>
+                ) : (
+                    <p className="text-muted-foreground py-4">
+                        Enter your temperature ranges and humidity preference to get an instant Climate Fit Score.
+                    </p>
+                )}
+            </div>
+        </div>
+    </CardContent>
+</Card>
