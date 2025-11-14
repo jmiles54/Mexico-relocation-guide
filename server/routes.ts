@@ -37,7 +37,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
 
       const completion = await groq.chat.completions.create({
-        model: "mixtral-8x7b-32768",
+        model: "llama-3.3-70b-versatile",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: `Score ${city} for Senior Comfort, Accessibility & Safety.` }
