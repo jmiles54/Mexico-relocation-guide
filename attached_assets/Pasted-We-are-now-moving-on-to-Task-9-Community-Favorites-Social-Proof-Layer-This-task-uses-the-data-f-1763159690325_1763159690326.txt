@@ -1,0 +1,123 @@
+We are now moving on to Task #9: Community Favorites & Social Proof Layer. This task uses the data foundation we built in Task #7 (Favorites Hook) to give users confidence by showing what other users are saving.
+
+👥 Task #9: Community Favorites & Social Proof
+The goal is to create a sense of community by displaying "Social Proof"—indicators that show a city is popular. Since we don't have a database of millions of users, we'll implement a simulated, dynamic popularity system based on the saved status from your useFavorites hook.
+
+Implementation Plan
+We will add a new component that reads the current saved city IDs and displays badges on the home page cards to show popularity status (e.g., "Top Pick," "Most Saved").
+
+Step 1: Update the Favorites Hook for Community Data (client/src/hooks/useFavorites.tsx)
+We need to add a function to simulate the "community" data, ensuring it is always available.
+
+TypeScript
+
+// client/src/hooks/useFavorites.tsx (ADD these lines to the existing file)
+
+// ... existing code ...
+
+const isFavorite = (cityId: CityId) => favorites.includes(cityId);
+
+// NEW: Simulated Community Data
+// This function returns a simulated list of "most saved" cities to drive social proof
+const getCommunityPicks = () => {
+    // In a real app, this would fetch data from the server.
+    // Here, we simulate popularity based on the general perceived expat interest.
+    return [
+        { id: 'pv', rank: 1, label: 'Top Expat Pick' }, // Puerto Vallarta
+        { id: 'merida', rank: 2, label: 'Most Saved This Month' }, // Merida
+        { id: 'sma', rank: 3, label: 'Retiree Favorite' }, // San Miguel de Allende
+    ];
+};
+
+// ... existing code ...
+
+return { favorites, toggleFavorite, isFavorite, getCommunityPicks }; // ADD getCommunityPicks
+Step 2: Create the Social Proof Component (client/src/components/SocialProofBadge.tsx)
+This new, small component will display the popularity badge on the city cards.
+
+TypeScript
+
+// client/src/components/SocialProofBadge.tsx (NEW FILE)
+import { Star, TrendingUp, Heart } from "lucide-react";
+
+interface SocialProofBadgeProps {
+  label: string;
+}
+
+const getIcon = (label: string) => {
+    if (label.includes('Top')) return <Star className="w-3 h-3 fill-current" />;
+    if (label.includes('Saved')) return <Heart className="w-3 h-3 fill-current" />;
+    if (label.includes('Favorite')) return <TrendingUp className="w-3 h-3 fill-current" />;
+    return null;
+};
+
+export default function SocialProofBadge({ label }: SocialProofBadgeProps) {
+  return (
+    <div className="absolute top-2 left-2 z-10 px-3 py-1 bg-yellow-600/90 backdrop-blur-sm rounded-full text-white text-xs font-bold shadow-md flex items-center gap-1">
+      {getIcon(label)}
+      <span>{label}</span>
+    </div>
+  );
+}
+Step 3: Integrate Badges into Home Page Cards (client/src/pages/Home.tsx)
+Finally, we update the main page to use the hook and conditionally display the badges.
+
+Changes in Home.tsx:
+
+Import useFavorites and SocialProofBadge.
+
+Call the getCommunityPicks function.
+
+Use a conditional check to render the badge inside the NeighborhoodCard component loop.
+
+TypeScript
+
+// client/src/pages/Home.tsx
+
+// ... existing imports ...
+import { useFavorites } from '../hooks/useFavorites'; // ADD THIS IMPORT
+import SocialProofBadge from '../components/SocialProofBadge'; // ADD THIS IMPORT
+
+// ... (inside the Home component function) ...
+export default function Home() {
+    // Call the hook to access the simulated community data
+    const { getCommunityPicks } = useFavorites();
+    const communityPicks = getCommunityPicks();
+    
+    // ... rest of your component logic ...
+
+    {/* Section for Featured Neighborhoods */}
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      {featuredNeighborhoods.map((neighborhood, index) => {
+        // Find if this neighborhood is a community pick
+        const communityData = communityPicks.find(p => p.id === neighborhood.cityId); 
+
+        return (
+          <Card key={index} className="relative hover-elevate"> {/* Ensure the card is relative for absolute badge positioning */}
+            
+            {/* 1. RENDER THE SOCIAL PROOF BADGE */}
+            {communityData && (
+                <SocialProofBadge label={communityData.label} />
+            )}
+            
+            <CardHeader className="p-0">
+              {/* Image, Title, etc. */}
+            </CardHeader>
+            <CardContent>
+              {/* ... existing card content ... */}
+            </CardContent>
+          </Card>
+        );
+      })}
+    </div>
+    
+    {/* ... rest of the Home.tsx content ... */}
+}
+Your Action:
+Update client/src/hooks/useFavorites.tsx with the new getCommunityPicks function and update the return value.
+
+Create the new file client/src/components/SocialProofBadge.tsx with the badge logic.
+
+Update client/src/pages/Home.tsx to import the new components/hook and render the <SocialProofBadge> conditionally inside your neighborhood map loop.
+
+Once this is complete, the popular cards on your home page will feature distinct badges, marking Task #9 as done!

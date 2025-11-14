@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Search, MapPin, Waves, Quote } from "lucide-react";
 import { useState } from "react";
 import NeighborhoodCard from "@/components/NeighborhoodCard";
+import { useFavorites } from '../hooks/useFavorites';
+import SocialProofBadge from '../components/SocialProofBadge';
 import heroImage from '@assets/stock_images/puerto_vallarta_mexi_37c839b6.jpg';
 import zonaImage from '@assets/stock_images/zona_romantica_puert_63220432.jpg';
 import versallesImage from '@assets/stock_images/versalles_neighborho_6f389286.jpg';
@@ -13,6 +15,8 @@ import pitillalImage from '@assets/stock_images/colorful_street_colo_1e0fdd01.jp
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
+  const { getCommunityPicks } = useFavorites();
+  const communityPicks = getCommunityPicks();
 
   const handleSearch = () => {
     console.log('Searching for:', searchQuery);
@@ -49,6 +53,7 @@ export default function Home() {
     {
       name: "Zona Romántica",
       city: "Puerto Vallarta",
+      cityId: "pv",
       image: zonaImage,
       affordabilityScore: 72,
       rentPrice: "14,000 MXN",
@@ -59,6 +64,7 @@ export default function Home() {
     {
       name: "Versalles",
       city: "Puerto Vallarta",
+      cityId: "pv",
       image: versallesImage,
       affordabilityScore: 82,
       rentPrice: "7,800 MXN",
@@ -69,6 +75,7 @@ export default function Home() {
     {
       name: "Marina Vallarta",
       city: "Puerto Vallarta",
+      cityId: "pv",
       image: marinaImage,
       affordabilityScore: 65,
       rentPrice: "12,200 MXN",
@@ -79,6 +86,7 @@ export default function Home() {
     {
       name: "Pitillal",
       city: "Puerto Vallarta",
+      cityId: "pv",
       image: pitillalImage,
       affordabilityScore: 88,
       rentPrice: "6,500 MXN",
@@ -147,9 +155,18 @@ export default function Home() {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {featuredNeighborhoods.map((neighborhood, index) => (
-            <NeighborhoodCard key={index} {...neighborhood} />
-          ))}
+          {featuredNeighborhoods.map((neighborhood, index) => {
+            const communityData = communityPicks.find(p => p.id === neighborhood.cityId);
+            
+            return (
+              <div key={index} className="relative">
+                {communityData && (
+                  <SocialProofBadge label={communityData.label} />
+                )}
+                <NeighborhoodCard {...neighborhood} />
+              </div>
+            );
+          })}
         </div>
       </div>
 
