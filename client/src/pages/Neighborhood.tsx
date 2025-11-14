@@ -14,12 +14,23 @@ import MetricCard from "@/components/MetricCard";
 import MapView from "@/components/MapView";
 import StreetView from "@/components/StreetView";
 import BudgetEngine from "@/components/BudgetEngine";
+import { useFavorites } from '@/hooks/useFavorites';
 import zonaImage from '@assets/stock_images/colorful_street_colo_1e0fdd01.jpg';
 import wineBarImage from '@assets/stock_images/wine_bar_restaurant__5c42922c.jpg';
 import beachImage from '@assets/stock_images/puerto_vallarta_mexi_37c839b6.jpg';
 
 export default function Neighborhood() {
   const [activeTab, setActiveTab] = useState("overview");
+  
+  const neighborhood = {
+    cityId: 'pv' as const,
+    name: 'Zona Romántica',
+    city: 'Puerto Vallarta',
+    state: 'Jalisco'
+  };
+  
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const favorite = isFavorite(neighborhood.cityId);
 
   const costItems = [
     {
@@ -163,10 +174,21 @@ export default function Neighborhood() {
           </Button>
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="text-3xl font-bold mb-2" data-testid="text-neighborhood-title">Zona Romántica</h1>
+              <div className="flex items-center gap-3 mb-2">
+                <h1 className="text-3xl font-bold" data-testid="text-neighborhood-title">{neighborhood.name}</h1>
+                <Button
+                  size="icon"
+                  variant={favorite ? "default" : "outline"}
+                  onClick={() => toggleFavorite(neighborhood.cityId)}
+                  title={favorite ? "Remove from Compare" : "Add to Compare"}
+                  data-testid="button-toggle-favorite"
+                >
+                  <Heart className={`w-5 h-5 ${favorite ? "fill-current" : ""}`} />
+                </Button>
+              </div>
               <div className="flex items-center gap-2 text-muted-foreground mb-3">
                 <MapPin className="w-4 h-4" />
-                <span>Puerto Vallarta, Jalisco</span>
+                <span>{neighborhood.city}, {neighborhood.state}</span>
               </div>
               <div className="flex gap-2">
                 <Badge variant="outline">

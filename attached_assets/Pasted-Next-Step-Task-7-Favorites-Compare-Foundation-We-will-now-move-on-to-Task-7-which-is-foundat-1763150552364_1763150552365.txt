@@ -1,0 +1,131 @@
+Next Step: Task #7 (Favorites + Compare Foundation)
+We will now move on to Task #7, which is foundational work required to make the upcoming Task #12 (Full Compare Drawer) functional. This task involves setting up the local data storage.
+
+Task #7: Favorites + Compare Foundation
+The goal is to allow a user to "Save" a city and persist that data in their browser, even if they leave and come back later. This is done using localStorage.
+
+Implementation Steps (React/TypeScript)
+We will create a simple service hook to manage the list of saved cities.
+
+Step 1: Create the useFavorites Hook (client/src/hooks/useFavorites.tsx)
+This hook will handle all localStorage interactions, providing an array of favorites and a function to toggle (add/remove) a city.
+
+TypeScript
+
+// client/src/hooks/useFavorites.tsx
+import { useState, useEffect } from 'react';
+
+// Define the key used for localStorage
+const FAVORITES_KEY = 'mexico_relocation_favorites';
+
+// Type for a city ID (e.g., 'pv', 'merida')
+type CityId = 'pv' | 'merida' | 'sma' | 'cancun';
+
+// Custom hook to manage favorite cities
+export function useFavorites() {
+  // Initialize state from localStorage on first render
+  const [favorites, setFavorites] = useState<CityId[]>(() => {
+    try {
+      const saved = localStorage.getItem(FAVORITES_KEY);
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      console.error("Could not load favorites from localStorage", e);
+      return [];
+    }
+  });
+
+  // Effect to sync state to localStorage whenever 'favorites' changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+    } catch (e) {
+      console.error("Could not save favorites to localStorage", e);
+    }
+  }, [favorites]);
+
+  // Function to add or remove a city from favorites
+  const toggleFavorite = (cityId: CityId) => {
+    setFavorites(prevFavorites => {
+      if (prevFavorites.includes(cityId)) {
+        // City is already a favorite, so remove it
+        return prevFavorites.filter(id => id !== cityId);
+      } else {
+        // City is not a favorite, so add it (with a max limit of 3 for comparison)
+        if (prevFavorites.length >= 3) {
+            // Optional: Alert the user they can only compare 3 cities
+            alert("You can only save up to 3 cities for comparison. Please remove one first.");
+            return prevFavorites;
+        }
+        return [...prevFavorites, cityId];
+      }
+    });
+  };
+  
+  // Helper function to check if a city is currently a favorite
+  const isFavorite = (cityId: CityId) => favorites.includes(cityId);
+
+  return { favorites, toggleFavorite, isFavorite };
+}
+Step 2: Implement the Toggle Button in the UI (client/src/pages/Neighborhood.tsx)
+You will now modify your Neighborhood.tsx file (or your city card component) to use this hook and display a button that lets the user save a city.
+
+Changes made to Neighborhood.tsx:
+
+Import the Hook.
+
+Use the Hook within the Neighborhood component.
+
+Add a Button near the city name/title.
+
+TypeScript
+
+// client/src/pages/Neighborhood.tsx
+
+// ... (existing imports)
+import { Heart } from "lucide-react"; // Import the Heart icon
+import { useFavorites } from '../hooks/useFavorites'; // ADD THIS IMPORT
+
+// ... Neighborhood function definition
+export default function Neighborhood({ /* ...props */ }) {
+  // Destructure the cityId needed for the hook
+  const cityId = neighborhood.cityId as 'pv' | 'merida' | 'sma' | 'cancun'; 
+  
+  // 1. USE THE NEW HOOK
+  const { isFavorite, toggleFavorite } = useFavorites();
+
+  // Determine button state
+  const favorite = isFavorite(cityId);
+
+  return (
+    <div className="container py-8">
+      <h1 className="text-4xl font-extrabold mb-4 flex items-center">
+        {neighborhood.name}
+        
+        {/* 2. ADD THE TOGGLE BUTTON (Task #7 UI) */}
+        <button
+          onClick={() => toggleFavorite(cityId)}
+          className={`ml-4 p-2 rounded-full transition-colors ${
+            favorite
+              ? 'bg-red-600 text-white hover:bg-red-700'
+              : 'bg-muted/50 text-muted-foreground hover:bg-muted/80'
+          }`}
+          title={favorite ? "Remove from Compare" : "Add to Compare"}
+        >
+          <Heart className="w-5 h-5 fill-current" />
+        </button>
+      </h1>
+      
+      {/* ... rest of your Tabs and Content ... */}
+      
+    </div>
+  );
+}
+This completes the foundation for Task #7. You now have a working persistence layer for saving city preferences!
+
+Your Action:
+
+Create client/src/hooks/useFavorites.tsx and paste Step 1's code.
+
+Update client/src/pages/Neighborhood.tsx with Step 2's code (importing and using the hook, and adding the Heart button).
+
+Once this is complete, you can click the Heart button on any city, refresh the page, and the button's state will persist, confirming the foundation is set.
