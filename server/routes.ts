@@ -155,6 +155,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Precision Filters / Recommendation Engine API endpoint (Task #11)
+  app.post('/api/recommendation', async (req, res) => {
+    try {
+      const { age, budget, mobility, interests } = req.body;
+
+      if (!age || !budget || !mobility || !interests) {
+        return res.status(400).json({ error: "Missing one or more required preference parameters." });
+      }
+
+      const apiKey = process.env.GROQ_API_KEY;
+      if (!apiKey) {
+        return res.status(503).json({ error: "Groq API key not found." });
+      }
+
+      const groq = new Groq({ apiKey });
+
+      const systemPrompt = (
+        "You are an expert relocation specialist for Mexico. Your knowledge base includes Puerto Vallarta, Mérida, San Miguel de Allende, and Cancún. " +
+        "Based ONLY on the user's detailed profile, select the SINGLE BEST CITY for them. " +
+        "Your output must be a JSON object with two fields: 'city' (The name of the recommended city) and 'justification' (A concise 3-sentence explanation of why it fits the profile)."
+      );
+      
+      const userProfile = (
+        `The user's profile is:\n` +
+        `- Age: ${age} years old\n` +
+        `- Monthly Budget: $${budget}\n` +
+        `- Mobility: ${mobility} (e.g., uses a cane/walker, fully mobile)\n` +
+        `- Interests: ${interests} (e.g., beaches, colonial history, food, nightlife)\n\n` +
+        `Which of the four cities (Puerto Vallarta, Mérida, San Miguel de Allende, Cancún) is the absolute best match?`
+      );
+
+      const completion = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userProfile }
+        ],
+        response_format: { type: "json_object" }
+      });
+
+      const jsonResponseText = completion.choices[0].message.content?.trim() || "{}";
+      const recommendationData = JSON.parse(jsonResponseText);
+
+      return res.json(recommendationData);
+
+    } catch (error: any) {
+      console.error('Recommendation API Error:', error);
+      return res.status(500).json({ error: 'AI recommendation service failed to process request.' });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

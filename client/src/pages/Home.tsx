@@ -1,11 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Search, MapPin, Waves, Quote } from "lucide-react";
 import { useState, useEffect } from "react";
 import NeighborhoodCard from "@/components/NeighborhoodCard";
 import SocialProofBadge from '../components/SocialProofBadge';
+import RecommendationForm from '../components/RecommendationForm';
 import heroImage from '@assets/stock_images/puerto_vallarta_mexi_37c839b6.jpg';
 import zonaImage from '@assets/stock_images/zona_romantica_puert_63220432.jpg';
 import versallesImage from '@assets/stock_images/versalles_neighborho_6f389286.jpg';
@@ -15,9 +16,17 @@ import pitillalImage from '@assets/stock_images/colorful_street_colo_1e0fdd01.jp
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [citySentiments, setCitySentiments] = useState<Record<string, string>>({});
+  const [recommendation, setRecommendation] = useState<{ city: string; justification: string } | null>(null);
 
   const handleSearch = () => {
     console.log('Searching for:', searchQuery);
+  };
+
+  const handleRecommendation = (data: { city: string; justification: string }) => {
+    setRecommendation(data);
+    setTimeout(() => {
+      document.getElementById('recommendation-result')?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
   };
 
   const featuredNeighborhoods = [
@@ -173,7 +182,38 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Featured Neighborhoods - NOW FIRST! */}
+      {/* Recommendation Form & Result Section (Task #11) */}
+      <div className="max-w-7xl mx-auto px-4 py-16">
+        <div className="mb-12 grid grid-cols-1 lg:grid-cols-2 gap-8" id="recommendation-result">
+          <RecommendationForm onRecommend={handleRecommendation} />
+
+          <Card className={`shadow-2xl border-4 ${recommendation ? 'border-green-500/80' : 'border-border/50'} transition-all duration-500`} data-testid="card-recommendation-result">
+            <CardHeader>
+              <CardTitle className="text-2xl text-foreground">
+                {recommendation ? '✅ Recommended City:' : 'Your Personalized Match'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {recommendation ? (
+                <div className="space-y-4">
+                  <p className="text-6xl font-extrabold text-green-400" data-testid="text-recommended-city">
+                    {recommendation.city}
+                  </p>
+                  <p className="text-lg text-muted-foreground italic" data-testid="text-recommendation-justification">
+                    "{recommendation.justification}"
+                  </p>
+                </div>
+              ) : (
+                <p className="text-muted-foreground py-16 text-center">
+                  Enter your details to get an instant, AI-powered match from our four featured cities.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Featured Neighborhoods */}
       <div className="max-w-7xl mx-auto px-4 py-16">
         <div className="mb-8">
           <h2 className="text-3xl font-bold mb-2">Featured Neighborhoods</h2>
