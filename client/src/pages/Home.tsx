@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, MapPin, Waves } from "lucide-react";
+import { Search, MapPin, Waves, Quote } from "lucide-react";
 import { useState } from "react";
 import NeighborhoodCard from "@/components/NeighborhoodCard";
 import heroImage from '@assets/stock_images/puerto_vallarta_mexi_37c839b6.jpg';
@@ -17,6 +17,33 @@ export default function Home() {
   const handleSearch = () => {
     console.log('Searching for:', searchQuery);
   };
+
+  const testimonials = [
+    {
+      text: "Now I have more friends in Vallarta than I ever have had in all my life",
+      author: "Jay, Retiree"
+    },
+    {
+      text: "Four years later, Puerto Vallarta feels more like home than anywhere else I've lived",
+      author: "Digital Nomad from Toronto"
+    },
+    {
+      text: "I used to pay double for half the space",
+      author: "Toronto Expat"
+    },
+    {
+      text: "After buying our condo, we have never been happier or so free of financial worries",
+      author: "Retired Couple"
+    },
+    {
+      text: "Street tacos under $2, 20-minute Uber rides for a few dollars",
+      author: "Multiple Expats"
+    },
+    {
+      text: "I have never looked back",
+      author: "Meagan, Relocated 2013"
+    }
+  ];
 
   const featuredNeighborhoods = [
     {
@@ -123,6 +150,34 @@ export default function Home() {
           {featuredNeighborhoods.map((neighborhood, index) => (
             <NeighborhoodCard key={index} {...neighborhood} />
           ))}
+        </div>
+      </div>
+
+      {/* Testimonials Section */}
+      <div className="py-16 bg-primary/5">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-2">What Expats Are Saying</h2>
+            <p className="text-muted-foreground">
+              Real experiences from people who made the move to Mexico
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {testimonials.map((testimonial, index) => (
+              <Card key={index} className="hover-elevate" data-testid={`card-testimonial-${index}`}>
+                <CardContent className="p-6">
+                  <Quote className="w-8 h-8 text-primary/20 mb-4" />
+                  <p className="text-foreground italic mb-4">
+                    "{testimonial.text}"
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    — {testimonial.author}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </div>
 
