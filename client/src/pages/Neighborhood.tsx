@@ -21,6 +21,9 @@ import beachImage from '@assets/stock_images/puerto_vallarta_mexi_37c839b6.jpg';
 
 export default function Neighborhood() {
   const [activeTab, setActiveTab] = useState("overview");
+  const [seniorScoreLoading, setSeniorScoreLoading] = useState(false);
+  const [seniorScoreData, setSeniorScoreData] = useState<{score: number; justification: string} | null>(null);
+  const [seniorScoreError, setSeniorScoreError] = useState<string | null>(null);
   
   const neighborhood = {
     cityId: 'pv' as const,
@@ -31,6 +34,37 @@ export default function Neighborhood() {
   
   const { isFavorite, toggleFavorite } = useFavorites();
   const favorite = isFavorite(neighborhood.cityId);
+
+  const getSeniorScore = async () => {
+    setSeniorScoreLoading(true);
+    setSeniorScoreError(null);
+    setSeniorScoreData(null);
+
+    try {
+      const response = await fetch('/api/senior_score', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ city: neighborhood.city })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || data.error) {
+        setSeniorScoreError(data.error || 'Failed to fetch score.');
+        return;
+      }
+
+      setSeniorScoreData(data);
+
+    } catch (error) {
+      console.error('Fetch error:', error);
+      setSeniorScoreError('Connection Error. Please try again.');
+    } finally {
+      setSeniorScoreLoading(false);
+    }
+  };
 
   const costItems = [
     {
@@ -346,7 +380,7 @@ export default function Neighborhood() {
                 {/* Budget Engine */}
                 <BudgetEngine cityId="pv" cityName="Puerto Vallarta" />
                 
-                {/* Senior Comfort Suite Placeholder */}
+                {/* Senior Comfort Suite */}
                 <Card data-testid="card-senior-comfort">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -362,17 +396,39 @@ export default function Neighborhood() {
                     <Button 
                       className="w-full"
                       data-testid="button-senior-score"
-                      disabled
+                      onClick={getSeniorScore}
+                      disabled={seniorScoreLoading}
                     >
                       <Zap className="w-4 h-4 mr-2" />
-                      Get Real-Time Senior Score
+                      {seniorScoreLoading ? 'Calculating...' : 'Get Real-Time Senior Score'}
                     </Button>
 
-                    <div className="p-4 border rounded-lg bg-muted/50">
-                      <p className="text-sm text-muted-foreground">
-                        Coming soon: AI-powered senior comfort analysis using real-time data
-                      </p>
-                    </div>
+                    {seniorScoreError && (
+                      <div className="p-4 border rounded-lg bg-destructive/10 border-destructive" data-testid="text-senior-error">
+                        <p className="text-sm text-destructive">
+                          {seniorScoreError}
+                        </p>
+                      </div>
+                    )}
+
+                    {seniorScoreData && (
+                      <div className="p-4 border rounded-lg bg-muted/50" data-testid="card-senior-result">
+                        <div className="text-5xl font-extrabold text-primary mb-2" data-testid="text-senior-score">
+                          {seniorScoreData.score}% Fit
+                        </div>
+                        <p className="text-sm text-muted-foreground" data-testid="text-senior-justification">
+                          {seniorScoreData.justification}
+                        </p>
+                      </div>
+                    )}
+
+                    {!seniorScoreData && !seniorScoreError && !seniorScoreLoading && (
+                      <div className="p-4 border rounded-lg bg-muted/50">
+                        <p className="text-sm text-muted-foreground">
+                          Click the button above to get an instant AI-powered senior comfort analysis
+                        </p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>
