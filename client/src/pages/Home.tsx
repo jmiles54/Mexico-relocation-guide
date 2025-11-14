@@ -2,11 +2,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, MapPin, Waves, Quote } from "lucide-react";
+import { Search, MapPin, Waves, Quote, Scale } from "lucide-react";
 import { useState, useEffect } from "react";
 import NeighborhoodCard from "@/components/NeighborhoodCard";
 import SocialProofBadge from '../components/SocialProofBadge';
 import RecommendationForm from '../components/RecommendationForm';
+import CompareDrawer from '../components/CompareDrawer';
+import { useFavorites } from '../hooks/useFavorites';
 import heroImage from '@assets/stock_images/puerto_vallarta_mexi_37c839b6.jpg';
 import zonaImage from '@assets/stock_images/zona_romantica_puert_63220432.jpg';
 import versallesImage from '@assets/stock_images/versalles_neighborho_6f389286.jpg';
@@ -17,6 +19,8 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [citySentiments, setCitySentiments] = useState<Record<string, string>>({});
   const [recommendation, setRecommendation] = useState<{ city: string; justification: string } | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const { favorites } = useFavorites();
 
   const handleSearch = () => {
     console.log('Searching for:', searchQuery);
@@ -531,6 +535,24 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* Task #12: Fixed Compare Button */}
+      {favorites.length > 0 && (
+        <Button 
+          className="fixed bottom-6 right-6 z-50 p-6 text-xl font-extrabold shadow-lg transition-all duration-300 hover:scale-[1.02]"
+          onClick={() => setIsDrawerOpen(true)}
+          data-testid="button-open-compare"
+        >
+          <Scale className="w-6 h-6 mr-3" />
+          Compare ({favorites.length})
+        </Button>
+      )}
+      
+      {/* Task #12: The Drawer Component */}
+      <CompareDrawer 
+        isOpen={isDrawerOpen} 
+        onClose={() => setIsDrawerOpen(false)} 
+      />
     </div>
   );
 }

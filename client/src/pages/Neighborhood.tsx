@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, ArrowLeft, Waves, Users, Coffee, DollarSign, Shield, Sun, Video, ExternalLink, Heart, Zap } from "lucide-react";
+import { MapPin, ArrowLeft, Waves, Users, Coffee, DollarSign, Shield, Sun, Video, ExternalLink, Heart, Zap, Scale } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import WeatherWidget from "@/components/WeatherWidget";
@@ -34,7 +34,7 @@ export default function Neighborhood() {
     state: 'Jalisco'
   };
   
-  const { isFavorite, toggleFavorite } = useFavorites();
+  const { isFavorite, toggleFavorite, favorites } = useFavorites();
   const favorite = isFavorite(neighborhood.cityId);
 
   const getSeniorScore = async () => {
@@ -689,6 +689,18 @@ export default function Neighborhood() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Task #12: Fixed Compare Button */}
+      {favorites.length > 0 && (
+        <Button 
+          className="fixed bottom-6 right-6 z-50 p-6 text-xl font-extrabold shadow-lg transition-all duration-300 hover:scale-[1.02]"
+          onClick={() => alert("Compare Drawer is ready! It needs to be placed in your main App.tsx to appear on this page.")}
+          data-testid="button-open-compare"
+        >
+          <Scale className="w-6 h-6 mr-3" />
+          Compare ({favorites.length})
+        </Button>
+      )}
     </div>
   );
 }
