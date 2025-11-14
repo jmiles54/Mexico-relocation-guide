@@ -22,7 +22,7 @@ export default function Home() {
     {
       name: "Zona Romántica",
       city: "Puerto Vallarta",
-      webcamUrl: "https://vallartashores.com/live-vallarta-webcam/",
+      image: zonaImage,
       affordabilityScore: 72,
       rentPrice: "14,000 MXN",
       expatRating: 9,
@@ -32,7 +32,7 @@ export default function Home() {
     {
       name: "Versalles",
       city: "Puerto Vallarta",
-      webcamUrl: "https://vallartashores.com/live-vallarta-webcam/",
+      image: versallesImage,
       affordabilityScore: 82,
       rentPrice: "7,800 MXN",
       expatRating: 6,
@@ -42,7 +42,7 @@ export default function Home() {
     {
       name: "Marina Vallarta",
       city: "Puerto Vallarta",
-      webcamUrl: "https://vallartashores.com/live-vallarta-webcam/",
+      image: marinaImage,
       affordabilityScore: 65,
       rentPrice: "12,200 MXN",
       expatRating: 7,
@@ -52,7 +52,7 @@ export default function Home() {
     {
       name: "Pitillal",
       city: "Puerto Vallarta",
-      webcamUrl: "https://vallartashores.com/live-vallarta-webcam/",
+      image: pitillalImage,
       affordabilityScore: 88,
       rentPrice: "6,500 MXN",
       expatRating: 4,
