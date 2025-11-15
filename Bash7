@@ -1,0 +1,5 @@
+git rm *.pdf *.md *.txt *.png *.zip
+git rm -r attached_assets/
+git add vercel.json client/index.html client/package.json vite.config.ts
+git commit -m "FINAL: Serve React app, delete PDFs"
+git push
