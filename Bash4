@@ -1,0 +1,2 @@
+git rm *.pdf *.md *.txt *.png *.zip
+git rm -r attached_assets/
