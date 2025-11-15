@@ -10,6 +10,30 @@ The application serves as a relocation decision-support tool, emphasizing transp
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes
+
+**November 15, 2025 - Task #17: Digital Nomad Readiness Score**
+
+Added comprehensive Digital Nomad Readiness feature to neighborhood detail pages:
+
+- **Backend API** (`/api/wifi_readiness`): POST endpoint using Groq LLM (llama-3.3-70b-versatile) with explicit JSON structure prompt to generate readiness scores (60-99), internet infrastructure summaries, and provider tips. Includes Zod validation with fallback data on failures.
+
+- **Frontend UI**: Indigo-themed card component in Overview tab featuring circular readiness score display, 3-sentence internet summary, and provider recommendation tip. Auto-loads on page mount with loading/error/retry states.
+
+- **Share Feature**: Fixed-position Share & Screen-Share button (bottom-right) using navigator.share API with clipboard fallback for URL sharing.
+
+- **Critical Bug Fixes**:
+  - Improved Groq prompt specificity to prevent json_validate_failed errors
+  - Added try-catch around Mapbox initialization in HealthcareMap to handle WebGL failures gracefully in headless browsers (prevents page crashes during E2E testing)
+
+- **Test Coverage**: Full E2E validation with data-testid attributes on all interactive and display elements (card-nomad-readiness, text-readiness-score, text-internet-summary, text-provider-tip, button-share-report).
+
+**AI Integration Pattern**: 
+- Uses Groq API key from GROQ_API_KEY environment variable
+- Response format: `{ type: "json_object" }` for structured output
+- Schema validation via Zod (z.safeParse) with typed fallback data
+- Error handling with try-catch and user-facing retry mechanisms
+
 ## System Architecture
 
 ### Frontend Architecture
