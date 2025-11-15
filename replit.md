@@ -12,6 +12,27 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+**November 15, 2025 - Task #19: Seasonal Hazard & Hurricane Risk Index**
+
+Added comprehensive seasonal hazard analysis feature to neighborhood detail pages:
+
+- **Backend API** (`/api/seasonal_hazard`): POST endpoint using Groq LLM (llama-3.3-70b-versatile) with explicit JSON structure to generate hazard risk scores (1-100, where 1 is safest), risk level classifications (Low/Moderate/High/Very High Risk), seasonal pattern summaries, and actionable mitigation tips. Includes Zod validation with fallback data on failures.
+
+- **Frontend UI**: Amber-themed safety card with CloudRain icon in Overview tab. Auto-loads on page mount. Features large risk score display (XX/100), color-coded risk level badge (green/yellow/orange/red), seasonal patterns description, and highlighted safety mitigation tip with ShieldCheck icon.
+
+- **Risk Analysis**: AI analyzes historical hurricane tracks, flood zones, tropical storm patterns, and extreme weather events specific to the city. Provides peak risk months and concrete advice on insurance, elevation requirements, evacuation routes, and structural considerations.
+
+- **User Experience**: Auto-loading safety analysis (like other core features). Includes retry mechanism for failed requests. Risk level badge dynamically changes color based on severity (green for Low Risk through red for Very High Risk).
+
+- **Test Coverage**: All interactive and display elements include data-testids: card-seasonal-hazard, text-hazard-score, badge-risk-level, text-seasonality-summary, text-mitigation-tip, button-retry-hazard.
+
+**AI Integration Pattern**: 
+- Uses Groq API key from GROQ_API_KEY environment variable
+- Explicit JSON structure prompting with strict field requirements
+- Schema validation via Zod (hazardRiskScore 1-100, enum for riskLevel, min character requirements)
+- Graceful fallback data on LLM/validation failures
+- Error handling with try-catch and user-facing retry mechanisms
+
 **November 15, 2025 - Task #18: Social & Singles Vibe Index**
 
 Added personalized social scene analysis feature to neighborhood detail pages:

@@ -441,14 +441,13 @@ export default function Neighborhood() {
         body: JSON.stringify({ city: neighborhood.city })
       });
 
-      const data = await response.json();
-      
-      if (!response.ok || data.error) {
-        throw new Error(data.error || 'Failed to load seasonal hazard data');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch seasonal hazard data');
       }
-      
+
+      const data = await response.json();
       setHazardData(data);
-      setHazardError(null);
     } catch (error: any) {
       console.error('Seasonal hazard fetch error:', error);
       setHazardError(error.message || 'Unable to load seasonal hazard analysis. Please try again.');
