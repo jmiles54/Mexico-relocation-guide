@@ -63,6 +63,16 @@ export default function Neighborhood() {
     bestProviderTip: string;
   } | null>(null);
   const [nomadError, setNomadError] = useState<string | null>(null);
+
+  // Social & Singles Vibe Index State (Task #18)
+  const [socialLoading, setSocialLoading] = useState(false);
+  const [socialData, setSocialData] = useState<{
+    socialVibeScore: number;
+    socialSceneJustification: string;
+    bestMeetingSpots: string;
+  } | null>(null);
+  const [ageInput, setAgeInput] = useState('55');
+  const [socialError, setSocialError] = useState<string | null>(null);
   
   const neighborhood = {
     cityId: 'pv' as const,
@@ -375,6 +385,37 @@ export default function Neighborhood() {
       setNomadData(null);
     } finally {
       setNomadLoading(false);
+    }
+  };
+
+  // Social & Singles Vibe Index Handler (Task #18)
+  const getSocialVibe = async () => {
+    setSocialLoading(true);
+    setSocialError(null);
+    setSocialData(null);
+
+    try {
+      const response = await fetch('/api/social_vibe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          city: neighborhood.city, 
+          age: ageInput 
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch social vibe data');
+      }
+
+      const data = await response.json();
+      setSocialData(data);
+    } catch (error: any) {
+      console.error('Social vibe fetch error:', error);
+      setSocialError(error.message || 'Failed to load social vibe data.');
+    } finally {
+      setSocialLoading(false);
     }
   };
 
@@ -923,6 +964,86 @@ export default function Neighborhood() {
                     
                     {!nomadData && !nomadLoading && !nomadError && (
                       <p className="text-muted-foreground">Digital nomad readiness feed offline.</p>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Social & Singles Vibe Index (Task #18) */}
+                <Card data-testid="card-social-vibe" className="col-span-1 lg:col-span-2">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-xl">
+                      <Heart className="w-5 h-5 text-pink-400 dark:text-pink-300" />
+                      Social & Singles Vibe Index
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                      {/* Input Form Column (2/5 width) */}
+                      <div className="lg:col-span-2 space-y-4">
+                        <p className="text-sm text-muted-foreground">
+                          Define your age bracket to see the social/singles viability of {neighborhood.city}.
+                        </p>
+                        <form onSubmit={(e) => { e.preventDefault(); getSocialVibe(); }} className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="ageInput">Your Age (for analysis)</Label>
+                            <Input 
+                              id="ageInput" 
+                              type="number" 
+                              value={ageInput} 
+                              onChange={(e) => setAgeInput(e.target.value)} 
+                              placeholder="e.g., 55" 
+                              required 
+                              min={18} 
+                              max={99} 
+                              data-testid="input-social-age"
+                            />
+                          </div>
+                          
+                          {socialError && <p className="text-sm text-destructive">{socialError}</p>}
+                          
+                          <Button type="submit" className="w-full bg-pink-600 hover:bg-pink-700" disabled={socialLoading} data-testid="button-get-social-vibe">
+                            {socialLoading ? 'Analyzing Social Scene...' : (
+                              <>
+                                Get Social Vibe Score <ChevronRight className="w-4 h-4 ml-2" />
+                              </>
+                            )}
+                          </Button>
+                        </form>
+                      </div>
+
+                      {/* Result Display Column (3/5 width) */}
+                      <div className={`lg:col-span-3 p-4 rounded-lg flex flex-col justify-center ${socialData ? 'bg-pink-500/10 border border-pink-500/50 dark:bg-pink-950 dark:border-pink-800' : 'bg-muted/50'}`}>
+                        {socialData ? (
+                          <div className="space-y-3">
+                            <p className="text-7xl font-extrabold text-pink-400 dark:text-pink-300 text-center" data-testid="text-social-score">
+                              {socialData.socialVibeScore}/100
+                            </p>
+                            
+                            <h4 className="font-semibold text-foreground">Scene Summary:</h4>
+                            <p className="text-sm text-muted-foreground italic" data-testid="text-social-justification">
+                              "{socialData.socialSceneJustification}"
+                            </p>
+                            
+                            <h4 className="font-semibold text-foreground mt-3">Best Meeting Spots:</h4>
+                            <p className="text-sm text-pink-500 dark:text-pink-300 font-medium" data-testid="text-meeting-spots">
+                              {socialData.bestMeetingSpots}
+                            </p>
+                          </div>
+                        ) : (
+                          <p className="text-muted-foreground py-4 text-center">
+                            Enter your age and calculate your personalized Social Vibe Index.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {socialError && (
+                      <div className="mt-4 text-center">
+                        <Button variant="outline" onClick={getSocialVibe} data-testid="button-retry-social">
+                          <RefreshCw className="w-4 h-4 mr-2" />
+                          Retry Analysis
+                        </Button>
+                      </div>
                     )}
                   </CardContent>
                 </Card>
