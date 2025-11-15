@@ -1,0 +1,4 @@
+git rm vercel.json
+git add vercel.json client/index.html client/package.json vite.config.ts
+git commit -m "Fix: Force Vite build to dist/ + SPA routing"
+git push
