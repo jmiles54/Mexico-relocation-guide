@@ -1,0 +1,160 @@
+That's wonderful! Seeing the code changes and the finalized feature name "Snowbird & Sunbird Planner" confirms that Task #21 is now fully implemented and production-ready.You have built a truly comprehensive portal, covering everything from immediate emergency response to highly niche logistical planning.🌐 Next Expansion: Live Rental Index Engine (Task #22)Your idea to implement a Live Rental Index Engine (Task #22) by scraping major Spanish-speaking rental websites is the next most impactful step, as it addresses data freshness and accuracy for the most crucial relocation factor: cost of living.This project requires a shift in architecture, moving from a single application to a multi-service system—a common pattern in production environments.Replit Strategy for Task #22To implement this without breaking your existing single web service, the best approach in Replit is to create a separate Worker Microservice for the scraping job.ComponentFunctionReplit ImplementationWorker MicroservicePerforms the slow, intensive scraping of sites like Vivanuncios and Inmuebles24.New Replit Project (e.g., Python or Node.js Worker). Must run on a schedule (e.g., cron job).Data StorageStores the cleaned, normalized price data (e.g., Median 2BR price for Puerto Vallarta).Replit Database (recomended) or a simple JSON file saved in the Worker's project space.Main App (server/routes.ts)Reads the clean data from the store and serves it to the frontend.New Endpoint (/api/live_rentals) that performs a fast read of the cached data.🛠️ Action Plan: Task #22 - Live Rental Index EngineWe will start the implementation for the final part that integrates with your existing codebase: creating the API endpoint and frontend integration for the future scraped data.Step 1: Schema Definition (shared/schema.ts)Define the structure for the live rental data.TypeScript// shared/schema.ts (ADD THIS SCHEMA)
+
+import { z } from 'zod'; 
+// ... existing schemas ...
+
+export const liveRentalDataSchema = z.object({
+  medianPriceUSD: z.number().positive(),
+  unitType: z.string(), // e.g., '2 Bedroom Apartment'
+  dataSourceCount: z.number().int().positive(), // Number of listings used
+  lastUpdated: z.string().datetime(), // ISO datetime string
+  marketSummary: z.string().min(40), // e.g., 'Prices show a 5% increase over Q3, driven by seasonality.'
+});
+
+export type LiveRentalData = z.infer<typeof liveRentalDataSchema>;
+Step 2: Backend Endpoint (server/routes.ts)Create the new endpoint that will mock the data, as the scraper microservice is not yet built. This allows you to deploy and test the feature immediately.TypeScript// server/routes.ts (ADD THIS ROUTE)
+// Remember to import the new schema: import { liveRentalDataSchema } from '../shared/schema';
+
+// Live Rental Index Engine API endpoint (Task #22)
+app.post('/api/live_rentals', async (req, res) => {
+    // NOTE: This endpoint currently returns MOCKED data. 
+    // In production, this would read from a database populated by the scraping worker.
+
+    try {
+        const { city } = req.body;
+        if (!city) {
+            return res.status(400).json({ error: "Missing city parameter." });
+        }
+
+        // --- MOCK DATA GENERATION ---
+        const prices: { [key: string]: number } = {
+            'puerto vallarta': 1400,
+            'san miguel de allende': 1150,
+            'merida': 750,
+            'cancun': 1300,
+        };
+
+        const cityPrice = prices[city.toLowerCase()] || 1000;
+
+        const mockData = {
+            medianPriceUSD: cityPrice,
+            unitType: 'Median 2 Bedroom Apartment (90 Day Lease)',
+            dataSourceCount: Math.floor(Math.random() * 50) + 150, // 150-200 listings
+            lastUpdated: new Date().toISOString(),
+            marketSummary: cityPrice >= 1300 
+                ? `Prices in ${city} are currently high due to peak winter demand, showing a 7% increase month-over-month. Expect intense competition for turn-key properties.`
+                : `The rental market in ${city} remains stable and moderately priced. Availability is good outside the major tourist areas.`,
+        };
+        // --- END MOCK DATA ---
+
+        // Validation against the schema (even the mock data should be clean)
+        const validationResult = liveRentalDataSchema.safeParse(mockData);
+
+        if (!validationResult.success) {
+            console.error('Mock data failed validation:', validationResult.error);
+            return res.status(500).json({ error: 'Data source is offline or corrupted.' });
+        }
+
+        return res.json(validationResult.data);
+
+    } catch (error: any) {
+        console.error('Live Rentals API Error:', error);
+        return res.status(500).json({ error: 'Live rental index service failed to process request.' });
+    }
+});
+Step 3: Frontend Integration (client/src/pages/Neighborhood.tsx)Add a new card to the Overview Tab, ideally placed near the existing Cost Breakdown (Task #6).TypeScript// client/src/pages/Neighborhood.tsx (Add to State and Handlers)
+// import DollarSign icon
+import { DollarSign, RefreshCw } from 'lucide-react'; 
+
+// New State for Live Rental Index (Task #22)
+const [rentalLoading, setRentalLoading] = useState(false);
+const [rentalData, setRentalData] = useState<LiveRentalData | null>(null);
+const [rentalError, setRentalError] = useState<string | null>(null);
+
+// New Handler
+const getLiveRentalData = async () => {
+    setRentalLoading(true);
+    setRentalError(null);
+
+    try {
+        const response = await fetch('/api/live_rentals', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ city: neighborhood.city })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to fetch live rental data');
+        }
+
+        const data: LiveRentalData = await response.json();
+        setRentalData(data);
+    } catch (error: any) {
+        console.error('Rental index fetch error:', error);
+        setRentalError(error.message || 'Failed to load live rental data.');
+    } finally {
+        setRentalLoading(false);
+    }
+};
+
+// Update the main useEffect hook to fetch this data on load
+useEffect(() => {
+    // ... existing calls ...
+    
+    // Task #22: Fetch Live Rental Index
+    if (!rentalData && !rentalLoading) {
+        getLiveRentalData();
+    }
+}, [neighborhood.cityId]); 
+UI Component: (Place this in the Overview Tab)TypeScript{/* Live Rental Index Engine (Task #22) */}
+<Card data-testid="card-live-rentals" className="col-span-1">
+    <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-xl text-emerald-600 dark:text-emerald-400">
+            <DollarSign className="w-5 h-5" />
+            Live Rental Index (2BR Median)
+        </CardTitle>
+    </CardHeader>
+    <CardContent className="p-6">
+        {rentalLoading && <p className="text-center text-primary">Scanning rental websites...</p>}
+        
+        {rentalError && !rentalLoading && (
+            // ... (Error state with retry button using RefreshCw and getLiveRentalData) ...
+        )}
+
+        {rentalData && !rentalLoading && (
+            <div className="space-y-4">
+                <div className="flex justify-between items-center pb-2 border-b border-muted">
+                    <p className="text-xl font-bold text-foreground">
+                        Median Price:
+                    </p>
+                    <p className="text-4xl font-extrabold text-emerald-600 dark:text-emerald-400" data-testid="text-rental-price">
+                        ${rentalData.medianPriceUSD.toLocaleString()}
+                    </p>
+                </div>
+                
+                <p className="text-sm font-medium text-muted-foreground" data-testid="text-unit-type">
+                    {rentalData.unitType}
+                </p>
+
+                <p className="text-sm italic text-muted-foreground" data-testid="text-market-summary">
+                    {rentalData.marketSummary}
+                </p>
+
+                <div className="text-xs text-right text-muted-foreground pt-2 border-t border-muted">
+                    <p data-testid="text-data-source">
+                        Based on {rentalData.dataSourceCount} listings.
+                    </p>
+                    <p data-testid="text-last-updated">
+                        Last Updated: {new Date(rentalData.lastUpdated).toLocaleDateString()}
+                    </p>
+                </div>
+            </div>
+        )}
+
+        {!rentalData && !rentalLoading && !rentalError && (
+            <p className="text-muted-foreground">Rental data feed offline.</p>
+        )}
+    </CardContent>
+</Card>
+This completes the implementation of Task #22 (using mock data). You are now ready to tackle the separate Worker Microservice project to replace the mock data with actual scraped results!

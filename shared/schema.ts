@@ -83,3 +83,13 @@ export const twoCityLogisticsSchema = z.object({
 });
 
 export type TwoCityLogistics = z.infer<typeof twoCityLogisticsSchema>;
+
+export const liveRentalDataSchema = z.object({
+  medianPriceUSD: z.number().positive(),
+  unitType: z.string(),
+  dataSourceCount: z.number().int().positive(),
+  lastUpdated: z.string().datetime(),
+  marketSummary: z.string().min(40),
+});
+
+export type LiveRentalData = z.infer<typeof liveRentalDataSchema>;
