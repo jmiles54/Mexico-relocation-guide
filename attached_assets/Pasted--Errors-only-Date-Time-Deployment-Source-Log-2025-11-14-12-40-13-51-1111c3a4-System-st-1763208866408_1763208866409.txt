@@ -1,0 +1,146 @@
+
+
+Errors only
+
+Date
+Time
+Deployment
+Source
+Log
+2025-11-14 12:40:13.51
+1111c3a4
+System
+starting up user application
+2025-11-14 12:40:13.51
+1111c3a4
+System
+metasidecar: loaded enterprise status from environment is_enterprise=false
+
+2025-11-14 12:40:13.51
+1111c3a4
+System
+forwarding local port 5000 to external port 80 (mapped as 1104)
+2025-11-14 12:40:14.69
+1111c3a4
+User
+> rest-express@1.0.0 start
+2025-11-14 12:40:14.69
+1111c3a4
+User
+> NODE_ENV=production node dist/index.js
+2025-11-14 12:40:15.30
+1111c3a4
+User
+6:40:15 PM [express] serving on port 5000
+2025-11-14 13:33:15.26
+1111c3a4
+System
+metasidecar: loaded enterprise status from environment is_enterprise=false
+2025-11-14 13:33:15.26
+1111c3a4
+System
+forwarding local port 5000 to external port 80 (mapped as 1104)
+2025-11-14 13:33:15.26
+1111c3a4
+System
+starting up user application
+2025-11-14 13:33:16.14
+1111c3a4
+User
+> NODE_ENV=production node dist/index.js
+2025-11-14 13:33:16.14
+1111c3a4
+User
+> rest-express@1.0.0 start
+2025-11-14 13:33:16.59
+1111c3a4
+User
+7:33:16 PM [express] serving on port 5000
+2025-11-14 13:49:15.98
+1111c3a4
+System
+system: received signal terminated
+2025-11-14 13:54:24.92
+1111c3a4
+System
+system: received signal terminated
+2025-11-15 04:51:59.40
+d00e6702
+System
+metasidecar: loaded enterprise status from environment is_enterprise=false
+2025-11-15 04:51:59.40
+d00e6702
+System
+starting up user application
+2025-11-15 04:51:59.40
+d00e6702
+System
+forwarding local port 5000 to external port 80 (mapped as 1104)
+2025-11-15 04:52:00.68
+d00e6702
+User
+> rest-express@1.0.0 start
+2025-11-15 04:52:00.68
+d00e6702
+User
+> NODE_ENV=production node dist/index.js
+2025-11-15 04:52:01.50
+d00e6702
+User
+10:52:01 AM [express] serving on port 5000
+2025-11-15 05:59:22.54
+b3404f6c
+System
+starting up user application
+2025-11-15 05:59:22.54
+b3404f6c
+System
+metasidecar: loaded enterprise status from environment is_enterprise=false
+2025-11-15 05:59:22.54
+b3404f6c
+System
+forwarding local port 5000 to external port 80 (mapped as 1104)
+2025-11-15 05:59:24.10
+b3404f6c
+User
+> rest-express@1.0.0 start
+2025-11-15 05:59:24.10
+b3404f6c
+User
+> NODE_ENV=production node dist/index.js
+2025-11-15 05:59:25.16
+b3404f6c
+User
+11:59:25 AM [express] serving on port 5000
+2025-11-15 06:04:30.95
+d00e6702
+System
+system: received signal terminated
+2025-11-15 06:07:23.53
+edfeab89
+System
+starting up user application
+2025-11-15 06:07:23.53
+edfeab89
+System
+forwarding local port 5000 to external port 80 (mapped as 1104)
+2025-11-15 06:07:23.53
+edfeab89
+System
+metasidecar: loaded enterprise status from environment is_enterprise=false
+2025-11-15 06:07:24.73
+edfeab89
+User
+> rest-express@1.0.0 start
+2025-11-15 06:07:24.73
+edfeab89
+User
+> NODE_ENV=production node dist/index.js
+2025-11-15 06:07:25.55
+edfeab89
+User
+12:07:25 PM [express] serving on port 5000
+2025-11-15 06:09:27.40
+b3404f6c
+System
+system: received signal terminated
