@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import Groq from "groq-sdk";
+import { accessibilityScoreSchema } from "../shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Senior Comfort Score API endpoint
@@ -291,6 +292,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error('Expat Sentiment API Error:', error);
       return res.status(500).json({ error: 'AI sentiment analysis failed to process request.' });
+    }
+  });
+
+  // Incline & Benches Index - Accessibility Score API endpoint (Task #16.1)
+  app.post('/api/accessibility_score', async (req, res) => {
+    try {
+      const { city, neighborhood } = req.body;
+
+      if (!city) {
+        return res.status(400).json({ error: "Missing city parameter." });
+      }
+
+      const apiKey = process.env.GROQ_API_KEY;
+      if (!apiKey) {
+        return res.status(503).json({ error: "Groq API key not found." });
+      }
+
+      const groq = new Groq({ apiKey });
+
+      const systemPrompt = (
+        "You are an urban mobility specialist focusing on pedestrian accessibility for seniors and individuals with mobility challenges. " +
+        "Analyze the terrain, street inclines, sidewalk quality, and availability of rest spots (benches, shaded areas) for the given city/neighborhood. " +
+        "Output ONLY a JSON object with these fields: " +
+        "'accessibilityScore' (integer 1-100, where 100 is perfectly flat with abundant benches), " +
+        "'terrainType' (string: MUST be exactly one of: 'Flat', 'Gentle Hills', 'Moderate Hills', or 'Steep Terrain'), " +
+        "'inclineDescription' (2-sentence description of typical street slopes and walking difficulty), " +
+        "'benchFrequency' (string: MUST be exactly one of: 'Abundant', 'Moderate', 'Sparse', or 'Very Limited'), " +
+        "'restSpotDetails' (2-sentence description of shaded rest areas, seating availability, and public spaces for breaks)."
+      );
+
+      const locationContext = neighborhood 
+        ? `Analyze the pedestrian accessibility of ${neighborhood}, ${city}, Mexico.`
+        : `Analyze the pedestrian accessibility of ${city}, Mexico.`;
+
+      const completion = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: locationContext }
+        ],
+        response_format: { type: "json_object" }
+      });
+
+      const jsonResponseText = completion.choices[0].message.content?.trim();
+      
+      if (!jsonResponseText) {
+        throw new Error('Empty response from LLM');
+      }
+
+      let parsedData;
+      try {
+        parsedData = JSON.parse(jsonResponseText);
+      } catch (parseError) {
+        console.error('JSON parse error:', parseError);
+        throw new Error('Invalid JSON response from LLM');
+      }
+
+      // Validate with Zod schema
+      const validationResult = accessibilityScoreSchema.safeParse(parsedData);
+      
+      if (!validationResult.success) {
+        console.error('Validation error:', validationResult.error);
+        // Return safe fallback on validation failure
+        return res.json({
+          accessibilityScore: 70,
+          terrainType: 'Moderate Hills',
+          inclineDescription: 'Terrain analysis temporarily unavailable. Please try again later.',
+          benchFrequency: 'Moderate',
+          restSpotDetails: 'Rest spot information temporarily unavailable. Please try again later.'
+        });
+      }
+
+      return res.json(validationResult.data);
+
+    } catch (error: any) {
+      console.error('Accessibility Score API Error:', error);
+      return res.status(500).json({ 
+        error: 'AI accessibility analysis failed to process request.',
+        details: error.message 
+      });
     }
   });
 

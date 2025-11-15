@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, ArrowLeft, Waves, Users, Coffee, DollarSign, Shield, Sun, Video, ExternalLink, Heart, Zap, Scale, TrendingUp, Thermometer, ChevronRight } from "lucide-react";
+import { MapPin, ArrowLeft, Waves, Users, Coffee, DollarSign, Shield, Sun, Video, ExternalLink, Heart, Zap, Scale, TrendingUp, Thermometer, ChevronRight, Mountain, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,6 +38,15 @@ export default function Neighborhood() {
   const [minTempInput, setMinTempInput] = useState('65');
   const [humidityInput, setHumidityInput] = useState('Low');
   const [climateError, setClimateError] = useState<string | null>(null);
+  const [accessibilityLoading, setAccessibilityLoading] = useState(false);
+  const [accessibilityData, setAccessibilityData] = useState<{
+    accessibilityScore: number;
+    terrainType: string;
+    inclineDescription: string;
+    benchFrequency: string;
+    restSpotDetails: string;
+  } | null>(null);
+  const [accessibilityError, setAccessibilityError] = useState<string | null>(null);
   
   const neighborhood = {
     cityId: 'pv' as const,
@@ -177,6 +186,37 @@ export default function Neighborhood() {
     }
   };
 
+  const getAccessibilityScore = async () => {
+    setAccessibilityLoading(true);
+    setAccessibilityError(null);
+
+    try {
+      const response = await fetch('/api/accessibility_score', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          city: neighborhood.city,
+          neighborhood: neighborhood.name
+        })
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok || data.error) {
+        throw new Error(data.error || 'Failed to load accessibility data');
+      }
+      
+      setAccessibilityData(data);
+      setAccessibilityError(null);
+    } catch (error: any) {
+      console.error('Accessibility fetch error:', error);
+      setAccessibilityError(error.message || 'Unable to load accessibility analysis. Please try again.');
+      setAccessibilityData(null);
+    } finally {
+      setAccessibilityLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!eventData && !eventLoading) {
       getSeasonalContent();
@@ -186,6 +226,9 @@ export default function Neighborhood() {
     }
     if (!sentimentData && !sentimentLoading) {
       getExpatSentiment();
+    }
+    if (!accessibilityData && !accessibilityLoading) {
+      getAccessibilityScore();
     }
   }, [neighborhood.cityId]);
 
@@ -559,6 +602,89 @@ export default function Neighborhood() {
                     
                     {!sentimentData && !sentimentLoading && (
                       <p className="text-muted-foreground">Expat sentiment feed offline.</p>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Incline & Benches Index - Accessibility Score (Task #16.1) */}
+                <Card data-testid="card-accessibility" className="col-span-1 lg:col-span-2">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-xl">
+                      <Mountain className="w-5 h-5 text-purple-400" />
+                      Walkability & Accessibility Index
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    {accessibilityLoading && <p className="text-center text-primary">Analyzing terrain and rest spots...</p>}
+                    
+                    {accessibilityError && !accessibilityLoading && (
+                      <div className="text-center space-y-4" data-testid="accessibility-error-state">
+                        <p className="text-destructive">{accessibilityError}</p>
+                        <Button 
+                          variant="outline" 
+                          onClick={getAccessibilityScore}
+                          data-testid="button-retry-accessibility"
+                          className="mx-auto"
+                        >
+                          <RefreshCw className="w-4 h-4 mr-2" />
+                          Retry Analysis
+                        </Button>
+                      </div>
+                    )}
+                    
+                    {accessibilityData && !accessibilityError && (
+                      <div className="space-y-6">
+                        {/* Score Header */}
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-muted-foreground">Overall Accessibility</p>
+                            <p className="text-5xl font-extrabold text-purple-400" data-testid="text-accessibility-score">
+                              {accessibilityData.accessibilityScore}/100
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <Badge variant="secondary" className="text-base px-4 py-2" data-testid="badge-terrain-type">
+                              {accessibilityData.terrainType}
+                            </Badge>
+                          </div>
+                        </div>
+
+                        {/* Details Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {/* Incline Details */}
+                          <div className="space-y-2">
+                            <h4 className="font-semibold text-foreground flex items-center gap-2">
+                              <Mountain className="w-4 h-4 text-purple-400" />
+                              Street Inclines
+                            </h4>
+                            <p className="text-sm text-muted-foreground" data-testid="text-incline-description">
+                              {accessibilityData.inclineDescription}
+                            </p>
+                          </div>
+
+                          {/* Rest Spots */}
+                          <div className="space-y-2">
+                            <h4 className="font-semibold text-foreground flex items-center gap-2">
+                              <Coffee className="w-4 h-4 text-purple-400" />
+                              Rest Spots & Benches
+                            </h4>
+                            <Badge variant="outline" className="mb-2" data-testid="badge-bench-frequency">
+                              {accessibilityData.benchFrequency}
+                            </Badge>
+                            <p className="text-sm text-muted-foreground" data-testid="text-rest-spot-details">
+                              {accessibilityData.restSpotDetails}
+                            </p>
+                          </div>
+                        </div>
+
+                        <p className="text-xs text-primary/70 text-center mt-4">
+                          *Analysis based on synthesized urban mobility patterns and terrain data
+                        </p>
+                      </div>
+                    )}
+                    
+                    {!accessibilityData && !accessibilityLoading && !accessibilityError && (
+                      <p className="text-muted-foreground">Accessibility data unavailable.</p>
                     )}
                   </CardContent>
                 </Card>
