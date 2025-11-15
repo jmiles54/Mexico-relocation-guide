@@ -495,6 +495,13 @@ export default function Neighborhood() {
     setLogisticsError(null);
     setLogisticsData(null);
 
+    // Basic input validation
+    if (!city1Input || !city2Input || !seasonSplitInput) {
+      setLogisticsError("Please ensure both cities and the seasonal split profile are filled.");
+      setLogisticsLoading(false);
+      return;
+    }
+
     try {
       const response = await fetch('/api/two_city_logistics', {
         method: 'POST',
@@ -508,15 +515,14 @@ export default function Neighborhood() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch logistics analysis');
+        throw new Error(errorData.error || 'Failed to fetch logistics data');
       }
 
       const data = await response.json();
       setLogisticsData(data);
     } catch (error: any) {
       console.error('Logistics analysis fetch error:', error);
-      setLogisticsError(error.message || 'Unable to load logistics analysis. Please try again.');
-      setLogisticsData(null);
+      setLogisticsError(error.message || 'Failed to load logistics analysis.');
     } finally {
       setLogisticsLoading(false);
     }
@@ -1481,54 +1487,62 @@ export default function Neighborhood() {
 
                       {/* Result Display Column */}
                       <div className={`lg:col-span-3 p-4 rounded-lg flex flex-col justify-center ${logisticsData ? 'bg-blue-500/10 border border-blue-500/50 dark:bg-blue-950 dark:border-blue-800' : 'bg-muted/50'}`}>
-                        {logisticsData ? (
+                        {logisticsLoading && (
+                          <p className="text-center text-primary">Analyzing two-city movement...</p>
+                        )}
+                        
+                        {logisticsError && !logisticsLoading && (
+                          <div className="text-center space-y-4" data-testid="logistics-error-state">
+                            <p className="text-destructive">{logisticsError}</p>
+                            <Button 
+                              variant="outline" 
+                              onClick={getLogisticsAnalysis}
+                              data-testid="button-retry-logistics"
+                              className="mx-auto"
+                            >
+                              <RefreshCw className="w-4 h-4 mr-2" />
+                              Retry Analysis
+                            </Button>
+                          </div>
+                        )}
+
+                        {logisticsData && !logisticsLoading && (
                           <div className="space-y-4">
-                            {/* Logistics Score */}
-                            <div className="text-center pb-4 border-b border-blue-500/30 dark:border-blue-700/30">
-                              <p className="text-6xl font-extrabold text-blue-500 dark:text-blue-400" data-testid="text-logistics-score">
-                                {logisticsData.logisticsScore}<span className="text-3xl">/100</span>
+                            <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide text-center">
+                              Logistical Complexity Score:
+                            </p>
+                            <div className="flex items-center justify-center gap-4">
+                              <p className="text-7xl font-extrabold text-blue-500 dark:text-blue-400" data-testid="text-logistics-score">
+                                {logisticsData.logisticsScore}/100
                               </p>
-                              <Badge 
-                                variant={
-                                  logisticsData.complexityLevel === 'Low' ? 'default' :
-                                  logisticsData.complexityLevel === 'Moderate' ? 'secondary' :
-                                  logisticsData.complexityLevel === 'High' ? 'destructive' :
-                                  'destructive'
-                                }
-                                className="mt-2"
-                                data-testid="badge-complexity-level"
-                              >
-                                {logisticsData.complexityLevel} Complexity
-                              </Badge>
+                              <div className={`px-4 py-1 rounded-full text-sm font-bold ${
+                                logisticsData.complexityLevel === 'Very High' ? 'bg-red-500/20 text-red-500' :
+                                logisticsData.complexityLevel === 'High' ? 'bg-amber-500/20 text-amber-500' :
+                                'bg-green-500/20 text-green-500'
+                              }`} data-testid="text-complexity-level">
+                                {logisticsData.complexityLevel}
+                              </div>
                             </div>
-                            
-                            {/* Cost Estimate */}
-                            <div>
-                              <h4 className="font-semibold text-sm text-muted-foreground mb-2 flex items-center gap-1">
-                                <DollarSign className="w-4 h-4" />
-                                Cost Analysis
-                              </h4>
-                              <p className="text-sm" data-testid="text-cost-estimate">
+
+                            <div className="space-y-3 pt-3">
+                              <h4 className="text-sm font-semibold text-foreground">Cost Overlap & Duplication:</h4>
+                              <p className="text-sm text-muted-foreground italic" data-testid="text-cost-summary">
                                 {logisticsData.costEstimateSummary}
                               </p>
-                            </div>
-                            
-                            {/* Timing Recommendation */}
-                            <div>
-                              <h4 className="font-semibold text-sm text-muted-foreground mb-2 flex items-center gap-1">
-                                <Sun className="w-4 h-4" />
-                                Optimal Timing
-                              </h4>
-                              <p className="text-sm" data-testid="text-timing-recommendation">
+                              
+                              <h4 className="text-sm font-semibold text-foreground mt-3">Optimal Timing & Travel:</h4>
+                              <p className="text-sm text-blue-500 dark:text-blue-300 font-medium" data-testid="text-timing-recommendation">
                                 {logisticsData.timingRecommendation}
                               </p>
                             </div>
                           </div>
-                        ) : (
+                        )}
+                        
+                        {!logisticsData && !logisticsLoading && !logisticsError && (
                           <div className="text-center py-8">
                             <PlaneTakeoff className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
                             <p className="text-muted-foreground text-sm">
-                              Enter your two cities and seasonal split to analyze logistics complexity and costs
+                              Enter your two cities and seasonal split profile to begin the analysis.
                             </p>
                           </div>
                         )}

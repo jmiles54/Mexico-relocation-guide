@@ -661,9 +661,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!validationResult.success) {
         console.error('Validation error:', validationResult.error);
         return res.json({
-          logisticsScore: 72,
-          costEstimateSummary: "Splitting time between Puerto Vallarta and San Miguel de Allende requires maintaining two residences with duplicate utilities and furnishings. Expect monthly costs 60-75% higher than single-city living, plus bi-annual moving expenses of $500-1000 USD. Flight or bus travel between cities runs approximately $50-150 USD per trip.",
-          timingRecommendation: "Move to the coast (Puerto Vallarta) in November-April for warm winters and peak tourist season amenities. Relocate inland (San Miguel de Allende) in May-October to escape coastal heat and humidity while enjoying spring festivals and cooler highlands climate. Book housing 2-3 months in advance for each season to secure best rates.",
+          logisticsScore: 70,
+          costEstimateSummary: "Logistics data is unavailable for these specific cities. Plan for a 20-30% overlap in living costs due to duplicate rent, utilities, and household expenses.",
+          timingRecommendation: "To minimize complexity, plan major moves in the shoulder seasons (May or October) to avoid peak holiday travel and housing competition.",
           complexityLevel: "Moderate"
         });
       }

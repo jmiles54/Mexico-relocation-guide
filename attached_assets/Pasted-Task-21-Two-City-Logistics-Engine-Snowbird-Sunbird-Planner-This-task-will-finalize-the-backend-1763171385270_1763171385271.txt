@@ -1,0 +1,177 @@
+Task #21: Two-City Logistics Engine (Snowbird & Sunbird Planner)
+This task will finalize the backend and integrate the robust UI for the dual-city analysis.
+
+Step 1: Backend Endpoint Robustness (server/routes.ts)
+We need to add the final Zod validation and a safe fallback to the endpoint defined previously, ensuring it won't crash even if the AI response is malformed.
+
+File to Edit: server/routes.ts
+
+TypeScript
+
+// server/routes.ts (Update the /api/two_city_logistics route)
+// Remember to import the new schema: import { twoCityLogisticsSchema } from '../shared/schema'; 
+
+app.post('/api/two_city_logistics', async (req, res) => {
+    try {
+        const { city1, city2, splitSeason } = req.body;
+        // ... (Input checks and Groq setup remain the same) ...
+
+        const completion = await groq.chat.completions.create({
+            model: "llama-3.3-70b-versatile",
+            messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userCriteria }],
+            response_format: { type: "json_object" }
+        });
+
+        const jsonResponseText = completion.choices[0].message.content?.trim();
+        if (!jsonResponseText) throw new Error('Empty response from LLM');
+
+        let parsedData;
+        try {
+            parsedData = JSON.parse(jsonResponseText);
+        } catch (parseError) {
+            console.error('JSON parse error:', parseError);
+            throw new Error('Invalid JSON response from LLM');
+        }
+
+        // Validate with Zod schema and apply fallback
+        const validationResult = twoCityLogisticsSchema.safeParse(parsedData);
+        
+        if (!validationResult.success) {
+            console.error('Validation error:', validationResult.error);
+            return res.json({
+                logisticsScore: 70,
+                costEstimateSummary: `Logistics data is unavailable for these specific cities. Plan for a 20-30% overlap in living costs due to duplicate rent, utilities, and household expenses.`,
+                timingRecommendation: 'To minimize complexity, plan major moves in the shoulder seasons (May or October) to avoid peak holiday travel and housing competition.',
+                complexityLevel: 'Moderate'
+            });
+        }
+
+        return res.json(validationResult.data);
+
+    } catch (error: any) {
+        // ... (Error handling remains the same) ...
+    }
+});
+Step 2: Frontend Implementation (client/src/pages/Neighborhood.tsx)
+We will add the final handler logic and the result display.
+
+File to Edit: client/src/pages/Neighborhood.tsx
+
+TypeScript
+
+// client/src/pages/Neighborhood.tsx (Update State and Handlers section)
+// Ensure the TwoCityLogistics type is imported from the schema
+// import { PlaneTakeoff, RefreshCw } from 'lucide-react'; 
+
+// ... (State variables defined previously: logisticsLoading, logisticsData, logisticsError, city1Input, city2Input, seasonSplitInput) ...
+
+// Final Handler Logic
+const getLogisticsAnalysis = async () => {
+    setLogisticsLoading(true);
+    setLogisticsError(null);
+    setLogisticsData(null);
+
+    // Basic input validation
+    if (!city1Input || !city2Input || !seasonSplitInput) {
+        setLogisticsError("Please ensure both cities and the seasonal split profile are filled.");
+        setLogisticsLoading(false);
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/two_city_logistics', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                city1: city1Input, 
+                city2: city2Input,
+                splitSeason: seasonSplitInput
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to fetch logistics data');
+        }
+
+        const data: TwoCityLogistics = await response.json();
+        setLogisticsData(data);
+    } catch (error: any) {
+        console.error('Logistics analysis fetch error:', error);
+        setLogisticsError(error.message || 'Failed to load logistics analysis.');
+    } finally {
+        setLogisticsLoading(false);
+    }
+};
+
+// client/src/pages/Neighborhood.tsx (Inside <TabsContent value="overview">)
+// Final UI Component (inside the card definition from the previous step)
+{/* Result Display Column (lg:col-span-3) */}
+<div className={`lg:col-span-3 p-4 rounded-lg flex flex-col justify-center ${logisticsData ? 'bg-blue-500/10 border border-blue-500/50 dark:bg-blue-950 dark:border-blue-800' : 'bg-muted/50'}`}>
+    {logisticsLoading && <p className="text-center text-primary">Analyzing two-city movement...</p>}
+    
+    {logisticsError && !logisticsLoading && (
+        <div className="text-center space-y-4" data-testid="logistics-error-state">
+            <p className="text-destructive">{logisticsError}</p>
+            <Button 
+                variant="outline" 
+                onClick={getLogisticsAnalysis}
+                data-testid="button-retry-logistics"
+                className="mx-auto"
+            >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Retry Analysis
+            </Button>
+        </div>
+    )}
+
+    {logisticsData && !logisticsLoading && (
+        <div className="space-y-4">
+            <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide text-center">
+                Logistical Complexity Score:
+            </p>
+            <div className="flex items-center justify-center gap-4">
+                <p className="text-7xl font-extrabold text-blue-500 dark:text-blue-400" data-testid="text-logistics-score">
+                    {logisticsData.logisticsScore}/100
+                </p>
+                <div className={`px-4 py-1 rounded-full text-sm font-bold ${
+                    logisticsData.complexityLevel === 'Very High' ? 'bg-red-500/20 text-red-500' :
+                    logisticsData.complexityLevel === 'High' ? 'bg-amber-500/20 text-amber-500' :
+                    'bg-green-500/20 text-green-500'
+                }`} data-testid="text-complexity-level">
+                    {logisticsData.complexityLevel}
+                </div>
+            </div>
+
+            <div className="space-y-3 pt-3">
+                <h4 className="text-sm font-semibold text-foreground">Cost Overlap & Duplication:</h4>
+                <p className="text-sm text-muted-foreground italic" data-testid="text-cost-summary">
+                    {logisticsData.costEstimateSummary}
+                </p>
+                
+                <h4 className="text-sm font-semibold text-foreground mt-3">Optimal Timing & Travel:</h4>
+                <p className="text-sm text-blue-500 dark:text-blue-300 font-medium" data-testid="text-timing-recommendation">
+                    {logisticsData.timingRecommendation}
+                </p>
+            </div>
+        </div>
+    )}
+    
+    {!logisticsData && !logisticsLoading && !logisticsError && (
+        <p className="text-muted-foreground py-4 text-center">
+            Enter your two cities and seasonal split profile to begin the analysis.
+        </p>
+    )}
+</div>
+🏗️ Next Expansion: Task #22 (Live Rental Index Engine)
+Once the code for Task #21 is implemented, the next project is the sophisticated Live Rental Index Engine (Task #22).
+
+This is a major architectural shift and cannot be built solely within your existing single Replit web service. To do this correctly:
+
+New Replit Project: You will need to start a new Replit project (e.g., a Python Worker or Node.js Worker template) dedicated solely to web scraping (using libraries like Scrapy or Puppeteer). This worker must be scheduled to run every 12-24 hours.
+
+Data Storage: The worker will save the normalized rental price data to a persistent data store (like a JSON file in the worker's project folder, which is readable by your main project, or a dedicated Replit Database).
+
+New API Endpoint: Your existing main project (server/routes.ts) will then need a new endpoint (/api/live_rentals) that simply reads this cached, cleaned data.
+
+This separation is crucial because web scraping is slow and computationally intensive, and must not interfere with the speed of your main user-facing application.
