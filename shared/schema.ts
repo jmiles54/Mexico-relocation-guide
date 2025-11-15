@@ -46,3 +46,11 @@ export const wifiReadinessSchema = z.object({
 });
 
 export type WifiReadiness = z.infer<typeof wifiReadinessSchema>;
+
+export const socialVibeSchema = z.object({
+  socialVibeScore: z.number().int().min(50).max(100),
+  socialSceneJustification: z.string().min(50),
+  bestMeetingSpots: z.string().min(20),
+});
+
+export type SocialVibe = z.infer<typeof socialVibeSchema>;

@@ -1,0 +1,233 @@
+This is fantastic news! Task #17 is complete, and the Digital Nomad Readiness Score, along with the family-friendly Share & Screen-Share button, makes the portal incredibly valuable for remote workers and families collaborating on a move.
+
+We have two highly specialized capstone features remaining from your list: the Social Index and the Split Calendar Planner.
+
+Let's proceed with Task #18: Social & Singles Vibe Index, which will transform a vague concept ("Is this city good for my social life?") into a quantified, actionable recommendation.
+
+💖 Task #18: Social & Singles Vibe Index
+This feature adds an AI-synthesized "Social Vibe Score" to the neighborhood page. It requires the user's age as input to personalize the advice, as the social scene for a 35-year-old is vastly different from a 65-year-old.
+
+1. Schema Definition (shared/schema.ts)
+We will define the data structure for validation, using Zod for robustness.
+
+TypeScript
+
+// shared/schema.ts (ADD THIS SCHEMA)
+import { z } from 'zod'; 
+// ... existing schemas ...
+
+export const socialVibeSchema = z.object({
+  socialVibeScore: z.number().int().min(50).max(100),
+  socialSceneJustification: z.string().min(50),
+  bestMeetingSpots: z.string().min(20),
+});
+
+export type SocialVibe = z.infer<typeof socialVibeSchema>;
+2. Backend Endpoint (server/routes.ts)
+Create the new /api/social_vibe endpoint to synthesize the personalized social analysis.
+
+TypeScript
+
+// server/routes.ts (ADD THIS ROUTE)
+// Remember to ensure Groq is imported: import Groq from 'groq-sdk';
+import { socialVibeSchema } from '../shared/schema'; // Ensure correct import path
+
+// Social & Singles Vibe Index API endpoint (Task #18)
+app.post('/api/social_vibe', async (req, res) => {
+    try {
+        const { city, age } = req.body;
+
+        if (!city || !age) {
+            return res.status(400).json({ error: "Missing city or age parameter." });
+        }
+
+        const apiKey = process.env.GROQ_API_KEY;
+        if (!apiKey) {
+            return res.status(503).json({ error: "Groq API key not found." });
+        }
+
+        const groq = new Groq({ apiKey });
+
+        const systemPrompt = (
+            "You are a sophisticated social scene analyst and dating profile expert for Mexican cities. " +
+            "Analyze the social landscape for a single person of the specified age in this city. " +
+            "Generate a 'Social Vibe Score' out of 100. Score based on the density of other singles in that age group, " +
+            "the accessibility of meeting spots, and the general social openness. " +
+            "You MUST output ONLY valid JSON with EXACTLY these three fields (no additional fields): " +
+            "{ \"socialVibeScore\": <integer 50-100>, \"socialSceneJustification\": \"<A 3-sentence summary of the social density and openness for this age group>\", \"bestMeetingSpots\": \"<A concise list of 3 specific types of locations/activities where this age group meets>\" }"
+        );
+
+        const completion = await groq.chat.completions.create({
+            model: "llama-3.3-70b-versatile",
+            messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: `Generate the Social Vibe Index for a single person aged ${age} in ${city}.` }
+            ],
+            response_format: { type: "json_object" }
+        });
+
+        const jsonResponseText = completion.choices[0].message.content?.trim();
+        if (!jsonResponseText) throw new Error('Empty response from LLM');
+
+        let parsedData = JSON.parse(jsonResponseText);
+        const validationResult = socialVibeSchema.safeParse(parsedData);
+        
+        if (!validationResult.success) {
+            console.error('Validation error:', validationResult.error);
+            // Return safe fallback on validation failure
+            return res.json({
+                socialVibeScore: 70,
+                socialSceneJustification: `The local social scene data for age ${age} is currently being updated. In general, social life centers around expat groups and cultural clubs.`,
+                bestMeetingSpots: 'Coffee shops, weekly markets, expat meetups.'
+            });
+        }
+
+        return res.json(validationResult.data);
+
+    } catch (error: any) {
+        console.error('Social Vibe API Error:', error);
+        return res.status(500).json({ 
+            error: 'AI social analysis failed to process request.',
+            details: error.message 
+        });
+    }
+});
+3. Frontend Integration (client/src/pages/Neighborhood.tsx)
+Step 3A: Add State and Handler
+TypeScript
+
+// client/src/pages/Neighborhood.tsx (Add to State and Handlers)
+
+// Make sure to import Heart icon:
+import { Heart, RefreshCw } from 'lucide-react'; 
+
+// New State for Social Vibe (Task #18)
+const [socialLoading, setSocialLoading] = useState(false);
+const [socialData, setSocialData] = useState<{
+    socialVibeScore: number;
+    socialSceneJustification: string;
+    bestMeetingSpots: string;
+} | null>(null);
+
+// Form Inputs State
+const [ageInput, setAgeInput] = useState('55'); // Default to target the retirement demographic
+const [socialError, setSocialError] = useState<string | null>(null);
+
+// New Handler
+const getSocialVibe = async () => {
+    setSocialLoading(true);
+    setSocialError(null);
+    setSocialData(null); // Clear previous results
+
+    try {
+        const response = await fetch('/api/social_vibe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                city: neighborhood.city, 
+                age: ageInput 
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to fetch social vibe data');
+        }
+
+        const data = await response.json();
+        setSocialData(data);
+    } catch (error: any) {
+        console.error('Social vibe fetch error:', error);
+        setSocialError(error.message || 'Failed to load social vibe data.');
+    } finally {
+        setSocialLoading(false);
+    }
+};
+// NOTE: This will be a manual trigger feature, as it requires age input.
+Step 3B: Add UI Card (Social Vibe Index)
+Place this new interactive card in the Overview Tab, below the Digital Nomad Readiness Card (Task #17).
+
+TypeScript
+
+// client/src/pages/Neighborhood.tsx (Inside <TabsContent value="overview">)
+
+{/* Social & Singles Vibe Index (Task #18) */}
+<Card data-testid="card-social-vibe" className="col-span-1 lg:col-span-2">
+    <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-xl">
+            <Heart className="w-5 h-5 text-pink-400 dark:text-pink-300" />
+            Social & Singles Vibe Index
+        </CardTitle>
+    </CardHeader>
+    <CardContent className="p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            {/* Input Form Column (2/5 width) */}
+            <div className="lg:col-span-2 space-y-4">
+                <p className="text-sm text-muted-foreground">
+                    Define your age bracket to see the social/singles viability of {neighborhood.city}.
+                </p>
+                <form onSubmit={(e) => { e.preventDefault(); getSocialVibe(); }} className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="ageInput">Your Age (for analysis)</Label>
+                        <Input 
+                            id="ageInput" 
+                            type="number" 
+                            value={ageInput} 
+                            onChange={(e) => setAgeInput(e.target.value)} 
+                            placeholder="e.g., 55" 
+                            required 
+                            min={18} 
+                            max={99} 
+                            data-testid="input-social-age"
+                        />
+                    </div>
+                    
+                    {socialError && <p className="text-sm text-destructive">{socialError}</p>}
+                    
+                    <Button type="submit" className="w-full bg-pink-600 hover:bg-pink-700" disabled={socialLoading} data-testid="button-get-social-vibe">
+                        {socialLoading ? 'Analyzing Social Scene...' : (
+                            <>
+                                Get Social Vibe Score <ChevronRight className="w-4 h-4 ml-2" />
+                            </>
+                        )}
+                    </Button>
+                </form>
+            </div>
+
+            {/* Result Display Column (3/5 width) */}
+            <div className={`lg:col-span-3 p-4 rounded-lg flex flex-col justify-center ${socialData ? 'bg-pink-500/10 border border-pink-500/50 dark:bg-pink-950 dark:border-pink-800' : 'bg-muted/50'}`}>
+                {socialData ? (
+                    <div className="space-y-3">
+                        <p className="text-7xl font-extrabold text-pink-400 dark:text-pink-300 text-center" data-testid="text-social-score">
+                            {socialData.socialVibeScore}/100
+                        </p>
+                        
+                        <h4 className="font-semibold text-foreground">Scene Summary:</h4>
+                        <p className="text-sm text-muted-foreground italic" data-testid="text-social-justification">
+                            "{socialData.socialSceneJustification}"
+                        </p>
+                        
+                        <h4 className="font-semibold text-foreground mt-3">Best Meeting Spots:</h4>
+                        <p className="text-sm text-pink-500 dark:text-pink-300 font-medium" data-testid="text-meeting-spots">
+                            {socialData.bestMeetingSpots}
+                        </p>
+                    </div>
+                ) : (
+                    <p className="text-muted-foreground py-4 text-center">
+                        Enter your age and calculate your personalized Social Vibe Index.
+                    </p>
+                )}
+            </div>
+        </div>
+        
+        {socialError && (
+          <div className="mt-4 text-center">
+            <Button variant="outline" onClick={getSocialVibe} data-testid="button-retry-social">
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Retry Analysis
+            </Button>
+          </div>
+        )}
+    </CardContent>
+</Card>
+This completes Task #18 and prepares us for the final capstone feature, the Split Calendar Logistics Engine (Task #19).
