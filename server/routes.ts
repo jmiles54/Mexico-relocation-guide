@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import Groq from "groq-sdk";
-import { accessibilityScoreSchema, safetyRatingSchema, seasonalHazardSchema, socialVibeSchema, wifiReadinessSchema } from "../shared/schema";
+import { accessibilityScoreSchema, emergencyPrepSchema, safetyRatingSchema, seasonalHazardSchema, socialVibeSchema, wifiReadinessSchema } from "../shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Senior Comfort Score API endpoint
@@ -586,6 +586,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Seasonal Hazard API Error:', error);
       return res.status(500).json({ 
         error: 'AI seasonal hazard analysis failed to process request.',
+        details: error.message 
+      });
+    }
+  });
+
+  // Emergency Preparedness & Evacuation Resources API endpoint (Task #20)
+  app.post('/api/emergency_prep', async (req, res) => {
+    try {
+      const { city } = req.body;
+
+      if (!city) {
+        return res.status(400).json({ error: "Missing city parameter." });
+      }
+
+      const apiKey = process.env.GROQ_API_KEY;
+      if (!apiKey) {
+        return res.status(503).json({ error: "Groq API key not found." });
+      }
+
+      const groq = new Groq({ apiKey });
+
+      const systemPrompt = (
+        "You are an emergency management specialist for Mexican coastal cities. " +
+        "Generate comprehensive, city-specific emergency preparedness information for active hurricane/disaster scenarios. " +
+        "Research actual local emergency contacts, evacuation routes, and shelter locations for this specific city. " +
+        "You MUST output ONLY valid JSON with EXACTLY these six fields (no additional fields): " +
+        "{ \"proteccionCivilPhone\": \"<Actual local Protección Civil phone number for this city, format: +52 XXX XXX XXXX>\", " +
+        "\"emergencyPhone\": \"<Mexico's national emergency number: 911>\", " +
+        "\"evacuationRoutes\": \"<2-3 sentences describing the primary evacuation routes leading inland from this coastal city, include highway numbers if known>\", " +
+        "\"shelterLocations\": \"<2-3 sentences listing typical emergency shelter locations in this city: schools, gymnasiums, community centers with actual neighborhood/street names if possible>\", " +
+        "\"preparednessChecklist\": \"<5-7 critical items residents should have ready: water, food, documents, medications, cash, flashlight, radio - be specific and actionable>\", " +
+        "\"evacuationTriggers\": \"<2-3 sentences explaining WHEN to evacuate vs shelter-in-place: mandatory evacuation orders, hurricane categories, storm surge warnings, flooding zones>\" }"
+      );
+
+      const completion = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: `Generate Emergency Preparedness & Evacuation Resources for ${city}, Mexico.` }
+        ],
+        response_format: { type: "json_object" }
+      });
+
+      const jsonResponseText = completion.choices[0].message.content?.trim();
+      
+      if (!jsonResponseText) {
+        throw new Error('Empty response from LLM');
+      }
+
+      let parsedData;
+      try {
+        parsedData = JSON.parse(jsonResponseText);
+      } catch (parseError) {
+        console.error('JSON parse error:', parseError);
+        throw new Error('Invalid JSON response from LLM');
+      }
+
+      const validationResult = emergencyPrepSchema.safeParse(parsedData);
+      
+      if (!validationResult.success) {
+        console.error('Validation error:', validationResult.error);
+        return res.json({
+          proteccionCivilPhone: "+52 322 178 8800",
+          emergencyPhone: "911",
+          evacuationRoutes: "Primary evacuation from coastal areas follows Highway 200 northbound toward Tepic or southbound toward Manzanillo. Secondary route is Highway 70 eastbound into the mountains. Avoid low-lying coastal roads during storm surge warnings.",
+          shelterLocations: "Emergency shelters typically open at local schools (Escuela Primaria Federal), sports complexes (Unidad Deportiva), and community centers (DIF Municipal). Check with Protección Civil for currently active shelter locations during emergencies.",
+          preparednessChecklist: "3-day water supply (1 gallon per person/day), non-perishable food, prescription medications, important documents in waterproof container, cash, battery-powered radio, flashlight, first aid kit, phone chargers/power bank",
+          evacuationTriggers: "Evacuate immediately for Category 3+ hurricanes (111+ mph winds), mandatory evacuation orders from Protección Civil, or storm surge warnings affecting your zone. Shelter-in-place only for tropical storms or Category 1-2 hurricanes if you are NOT in a flood zone and have a structurally sound building away from the coast."
+        });
+      }
+
+      return res.json(validationResult.data);
+
+    } catch (error: any) {
+      console.error('Emergency Prep API Error:', error);
+      return res.status(500).json({ 
+        error: 'AI emergency preparedness analysis failed to process request.',
         details: error.message 
       });
     }

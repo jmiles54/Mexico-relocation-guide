@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, ArrowLeft, Waves, Users, Coffee, DollarSign, Shield, Sun, Video, ExternalLink, Heart, Zap, Scale, TrendingUp, Thermometer, ChevronRight, Mountain, RefreshCw, ShieldCheck, Wifi, CloudRain } from "lucide-react";
+import { MapPin, ArrowLeft, Waves, Users, Coffee, DollarSign, Shield, Sun, Video, ExternalLink, Heart, Zap, Scale, TrendingUp, Thermometer, ChevronRight, Mountain, RefreshCw, ShieldCheck, Wifi, CloudRain, AlertTriangle, Phone, MapPinned, Home, CheckSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -83,6 +83,18 @@ export default function Neighborhood() {
     mitigationTip: string;
   } | null>(null);
   const [hazardError, setHazardError] = useState<string | null>(null);
+
+  // Emergency Preparedness & Evacuation Resources State (Task #20)
+  const [emergencyLoading, setEmergencyLoading] = useState(false);
+  const [emergencyData, setEmergencyData] = useState<{
+    proteccionCivilPhone: string;
+    emergencyPhone: string;
+    evacuationRoutes: string;
+    shelterLocations: string;
+    preparednessChecklist: string;
+    evacuationTriggers: string;
+  } | null>(null);
+  const [emergencyError, setEmergencyError] = useState<string | null>(null);
   
   const neighborhood = {
     cityId: 'pv' as const,
@@ -457,6 +469,34 @@ export default function Neighborhood() {
     }
   };
 
+  // Emergency Preparedness & Evacuation Resources Handler (Task #20)
+  const getEmergencyPrep = async () => {
+    setEmergencyLoading(true);
+    setEmergencyError(null);
+
+    try {
+      const response = await fetch('/api/emergency_prep', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ city: neighborhood.city })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch emergency preparedness data');
+      }
+
+      const data = await response.json();
+      setEmergencyData(data);
+    } catch (error: any) {
+      console.error('Emergency prep fetch error:', error);
+      setEmergencyError(error.message || 'Unable to load emergency preparedness information. Please try again.');
+      setEmergencyData(null);
+    } finally {
+      setEmergencyLoading(false);
+    }
+  };
+
   const shareScreenReport = () => {
     if (navigator.share) {
       navigator.share({
@@ -491,6 +531,9 @@ export default function Neighborhood() {
     }
     if (!hazardData && !hazardLoading) {
       getSeasonalHazard();
+    }
+    if (!emergencyData && !emergencyLoading) {
+      getEmergencyPrep();
     }
   }, [neighborhood.cityId]);
 
@@ -1455,12 +1498,108 @@ export default function Neighborhood() {
                   </div>
                 </div>
                 
-                <div className="p-4 bg-blue-50 border border-blue-200 rounded-md">
-                  <p className="text-sm text-blue-900">
+                <div className="p-4 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-md">
+                  <p className="text-sm text-blue-900 dark:text-blue-100">
                     <strong>Note:</strong> Safety data sourced from local police reports and expat community surveys.
                     Last updated: October 2025
                   </p>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Emergency Preparedness & Evacuation Resources (Task #20) */}
+            <Card data-testid="card-emergency-prep" className="mt-8">
+              <CardHeader className="bg-red-50 dark:bg-red-950 border-b border-red-200 dark:border-red-800">
+                <CardTitle className="flex items-center gap-2 text-xl text-red-800 dark:text-red-200">
+                  <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
+                  Emergency Preparedness & Evacuation
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                {emergencyLoading ? (
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <RefreshCw className="w-8 h-8 text-red-500 animate-spin mb-3" />
+                    <p className="text-sm text-muted-foreground">Loading emergency resources...</p>
+                  </div>
+                ) : emergencyError ? (
+                  <div className="text-center py-8 space-y-4">
+                    <p className="text-sm text-destructive">{emergencyError}</p>
+                    <Button variant="outline" onClick={getEmergencyPrep} data-testid="button-retry-emergency">
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Retry Loading
+                    </Button>
+                  </div>
+                ) : emergencyData ? (
+                  <div className="space-y-6">
+                    {/* Emergency Contacts */}
+                    <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                      <h3 className="font-semibold text-red-800 dark:text-red-200 mb-3 flex items-center gap-2">
+                        <Phone className="w-4 h-4" />
+                        Emergency Contacts
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <p className="text-muted-foreground">Protección Civil</p>
+                          <p className="font-bold text-red-700 dark:text-red-300" data-testid="text-proteccion-civil-phone">
+                            {emergencyData.proteccionCivilPhone}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Emergency Services</p>
+                          <p className="font-bold text-red-700 dark:text-red-300" data-testid="text-emergency-phone">
+                            {emergencyData.emergencyPhone}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Evacuation Routes */}
+                    <div>
+                      <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2">
+                        <MapPinned className="w-4 h-4 text-red-600 dark:text-red-400" />
+                        Evacuation Routes
+                      </h3>
+                      <p className="text-sm text-muted-foreground" data-testid="text-evacuation-routes">
+                        {emergencyData.evacuationRoutes}
+                      </p>
+                    </div>
+
+                    {/* Shelter Locations */}
+                    <div>
+                      <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2">
+                        <Home className="w-4 h-4 text-red-600 dark:text-red-400" />
+                        Emergency Shelters
+                      </h3>
+                      <p className="text-sm text-muted-foreground" data-testid="text-shelter-locations">
+                        {emergencyData.shelterLocations}
+                      </p>
+                    </div>
+
+                    {/* Preparedness Checklist */}
+                    <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+                      <h3 className="font-semibold text-amber-800 dark:text-amber-200 mb-2 flex items-center gap-2">
+                        <CheckSquare className="w-4 h-4" />
+                        Emergency Kit Essentials
+                      </h3>
+                      <p className="text-sm text-muted-foreground" data-testid="text-preparedness-checklist">
+                        {emergencyData.preparednessChecklist}
+                      </p>
+                    </div>
+
+                    {/* Evacuation Triggers */}
+                    <div className="bg-red-100 dark:bg-red-900 border-l-4 border-red-600 dark:border-red-400 p-4 rounded">
+                      <h3 className="font-bold text-red-800 dark:text-red-200 mb-2 flex items-center gap-2">
+                        <AlertTriangle className="w-5 h-5" />
+                        When to Evacuate
+                      </h3>
+                      <p className="text-sm text-red-900 dark:text-red-100 font-medium" data-testid="text-evacuation-triggers">
+                        {emergencyData.evacuationTriggers}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-center py-8 text-muted-foreground">Loading emergency preparedness information...</p>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
