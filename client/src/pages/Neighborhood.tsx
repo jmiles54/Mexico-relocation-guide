@@ -1412,7 +1412,7 @@ export default function Neighborhood() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-xl text-blue-500 dark:text-blue-300">
                       <PlaneTakeoff className="w-5 h-5" />
-                      Two-City Logistics Engine (Snowbird Planner)
+                      Snowbird & Sunbird Planner
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-6">
@@ -1420,7 +1420,7 @@ export default function Neighborhood() {
                       {/* Input Form Column */}
                       <form onSubmit={(e) => { e.preventDefault(); getLogisticsAnalysis(); }} className="lg:col-span-2 space-y-4">
                         <p className="text-sm text-muted-foreground mb-4">
-                          Planning to split your time between two cities? Get AI-powered logistics analysis for your snowbird lifestyle.
+                          Planning to split your time between two cities? Analyze logistics whether you're escaping winter cold or summer heat.
                         </p>
                         
                         {/* City 1 & 2 Inputs */}

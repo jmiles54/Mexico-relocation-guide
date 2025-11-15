@@ -620,9 +620,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const groq = new Groq({ apiKey });
 
       const systemPrompt = (
-        "You are a 'Snowbird' relocation expert specializing in seasonal split-living in Mexico. " +
+        "You are a Snowbird & Sunbird relocation expert specializing in seasonal split-living in Mexico. " +
         "Analyze the logistical difficulty of maintaining a two-city residence split between the two specified cities for the given season profile. " +
         "Consider factors like travel distance, regional rent costs, optimal climate timing, and duplicate expenses (furniture, utilities, household goods). " +
+        "Remember: Snowbirds escape winter cold, Sunbirds escape summer heat - both migration patterns are equally valid. " +
         "You MUST output ONLY valid JSON with EXACTLY these four fields (no additional fields): " +
         "{ \"logisticsScore\": <integer 50-100, where 100 is easiest logistics>, " +
         "\"costEstimateSummary\": \"<A 3-sentence summary of the estimated cost delta and duplicate expenses like rent, utilities, travel costs>\", " +
