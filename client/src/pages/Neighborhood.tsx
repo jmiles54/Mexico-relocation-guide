@@ -1006,6 +1006,68 @@ export default function Neighborhood() {
                   </CardContent>
                 </Card>
 
+                {/* Live Rental Index Engine (Task #22) */}
+                <Card data-testid="card-live-rentals" className="col-span-1">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-xl text-emerald-600 dark:text-emerald-400">
+                      <DollarSign className="w-5 h-5" />
+                      Live Rental Index (2BR Median)
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    {rentalLoading && <p className="text-center text-primary">Scanning rental websites...</p>}
+                    
+                    {rentalError && !rentalLoading && (
+                      <div className="text-center space-y-4" data-testid="rental-error-state">
+                        <p className="text-destructive">{rentalError}</p>
+                        <Button 
+                          variant="outline" 
+                          onClick={getLiveRentalData}
+                          data-testid="button-retry-rentals"
+                          className="mx-auto"
+                        >
+                          <RefreshCw className="w-4 h-4 mr-2" />
+                          Retry Loading
+                        </Button>
+                      </div>
+                    )}
+
+                    {rentalData && !rentalLoading && (
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center pb-2 border-b border-muted">
+                          <p className="text-xl font-bold text-foreground">
+                            Median Price:
+                          </p>
+                          <p className="text-4xl font-extrabold text-emerald-600 dark:text-emerald-400" data-testid="text-rental-price">
+                            ${rentalData.medianPriceUSD.toLocaleString()}
+                          </p>
+                        </div>
+                        
+                        <p className="text-sm font-medium text-muted-foreground" data-testid="text-unit-type">
+                          {rentalData.unitType}
+                        </p>
+
+                        <p className="text-sm italic text-muted-foreground" data-testid="text-market-summary">
+                          {rentalData.marketSummary}
+                        </p>
+
+                        <div className="text-xs text-right text-muted-foreground pt-2 border-t border-muted">
+                          <p data-testid="text-data-source">
+                            Based on {rentalData.dataSourceCount} listings.
+                          </p>
+                          <p data-testid="text-last-updated">
+                            Last Updated: {new Date(rentalData.lastUpdated).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {!rentalData && !rentalLoading && !rentalError && (
+                      <p className="text-muted-foreground">Rental data feed offline.</p>
+                    )}
+                  </CardContent>
+                </Card>
+
                 {/* Crime Safety Rating (Task #16.2) */}
                 <Card data-testid="card-safety" className="col-span-1 lg:col-span-2">
                   <CardHeader>
