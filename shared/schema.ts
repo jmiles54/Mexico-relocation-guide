@@ -63,3 +63,14 @@ export const seasonalHazardSchema = z.object({
 });
 
 export type SeasonalHazard = z.infer<typeof seasonalHazardSchema>;
+
+export const emergencyPrepSchema = z.object({
+  proteccionCivilPhone: z.string().min(10),
+  emergencyPhone: z.string().min(3),
+  evacuationRoutes: z.string().min(50),
+  shelterLocations: z.string().min(50),
+  preparednessChecklist: z.string().min(100),
+  evacuationTriggers: z.string().min(60),
+});
+
+export type EmergencyPrep = z.infer<typeof emergencyPrepSchema>;
