@@ -12,6 +12,25 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+**November 15, 2025 - Task #18: Social & Singles Vibe Index**
+
+Added personalized social scene analysis feature to neighborhood detail pages:
+
+- **Backend API** (`/api/social_vibe`): POST endpoint using Groq LLM (llama-3.3-70b-versatile) with explicit JSON structure to generate age-personalized social viability scores (50-100), 3-sentence justifications of social density/openness, and curated lists of best meeting spots. Includes Zod validation with fallback data.
+
+- **Frontend UI**: Pink-themed interactive card with Heart icon in Overview tab. Features age input form (18-99, default 55) and manual submission trigger. Results display includes large score visualization (XX/100), italic social scene justification, and highlighted meeting spots recommendations. Grid layout: 2/5 for form, 3/5 for results.
+
+- **User Experience**: User-triggered analysis (not auto-loading) that clears previous results on new submission. Allows multiple age comparisons to evaluate social fit for different life stages (e.g., age 35 vs. 65).
+
+- **Test Coverage**: Full E2E validation with multiple age inputs (35→85/100, 65→72/100). All data-testids verified: card-social-vibe, input-social-age, button-get-social-vibe, text-social-score, text-social-justification, text-meeting-spots, button-retry-social.
+
+**AI Integration Pattern**: 
+- Uses Groq API key from GROQ_API_KEY environment variable
+- Explicit JSON structure prompting to prevent validation errors
+- Schema validation via Zod (socialVibeScore 50-100, min character requirements)
+- Graceful fallback data on LLM failures
+- Error handling with try-catch and user-facing retry mechanisms
+
 **November 15, 2025 - Task #17: Digital Nomad Readiness Score**
 
 Added comprehensive Digital Nomad Readiness feature to neighborhood detail pages:
