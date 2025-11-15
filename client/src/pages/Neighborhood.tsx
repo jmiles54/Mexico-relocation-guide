@@ -16,6 +16,7 @@ import MetricCard from "@/components/MetricCard";
 import MapView from "@/components/MapView";
 import StreetView from "@/components/StreetView";
 import BudgetEngine from "@/components/BudgetEngine";
+import HealthcareMap from "@/components/HealthcareMap";
 import { useFavorites } from '@/hooks/useFavorites';
 import zonaImage from '@assets/stock_images/colorful_street_colo_1e0fdd01.jpg';
 import wineBarImage from '@assets/stock_images/wine_bar_restaurant__5c42922c.jpg';
@@ -60,8 +61,94 @@ export default function Neighborhood() {
     cityId: 'pv' as const,
     name: 'Zona Romántica',
     city: 'Puerto Vallarta',
-    state: 'Jalisco'
+    state: 'Jalisco',
+    centerLat: 20.6075,
+    centerLng: -105.2375
   };
+
+  // Healthcare facilities near Zona Romántica, Puerto Vallarta
+  const healthcareFacilities = [
+    {
+      id: 1,
+      name: 'Farmacia Guadalajara',
+      type: 'pharmacy' as const,
+      lat: 20.6095,
+      lng: -105.2355,
+      address: 'Calle Francisca Rodríguez 136',
+      hours: '7:00 AM - 11:00 PM',
+      phone: '+52 322 222 0000'
+    },
+    {
+      id: 2,
+      name: 'Farmacia Similares',
+      type: 'pharmacy' as const,
+      lat: 20.6050,
+      lng: -105.2340,
+      address: 'Av. Olas Altas 425',
+      hours: '24 Hours',
+      phone: '+52 322 223 1111'
+    },
+    {
+      id: 3,
+      name: 'CMQ Premier Hospital',
+      type: 'hospital' as const,
+      lat: 20.6180,
+      lng: -105.2450,
+      address: 'Av. Los Tules 136',
+      hours: '24 Hours Emergency',
+      phone: '+52 322 226 6500'
+    },
+    {
+      id: 4,
+      name: 'Hospital Joya Marina',
+      type: 'hospital' as const,
+      lat: 20.6220,
+      lng: -105.2520,
+      address: 'Blvd. Francisco Medina Ascencio 2760',
+      hours: '24 Hours Emergency',
+      phone: '+52 322 226 1010'
+    },
+    {
+      id: 5,
+      name: 'Clinica Vida',
+      type: 'clinic' as const,
+      lat: 20.6065,
+      lng: -105.2390,
+      address: 'Calle Basilio Badillo 365',
+      hours: '9:00 AM - 8:00 PM',
+      phone: '+52 322 222 3456'
+    },
+    {
+      id: 6,
+      name: 'Centro Médico Urgencias',
+      type: 'clinic' as const,
+      lat: 20.6110,
+      lng: -105.2410,
+      address: 'Calle Insurgentes 175',
+      hours: '8:00 AM - 10:00 PM',
+      phone: '+52 322 223 7890'
+    },
+    {
+      id: 7,
+      name: 'Farmacia del Ahorro',
+      type: 'pharmacy' as const,
+      lat: 20.6130,
+      lng: -105.2400,
+      address: 'Av. Francisco Villa 1260',
+      hours: '6:00 AM - 12:00 AM',
+      phone: '+52 322 222 5555'
+    },
+    {
+      id: 8,
+      name: 'Clinica Hospital San Javier Marina',
+      type: 'clinic' as const,
+      lat: 20.6250,
+      lng: -105.2580,
+      address: 'Blvd. Francisco Medina Ascencio 2760',
+      hours: '24 Hours',
+      phone: '+52 322 226 1010'
+    }
+  ];
   
   const { isFavorite, toggleFavorite, favorites } = useFavorites();
   const favorite = isFavorite(neighborhood.cityId);
@@ -727,6 +814,16 @@ export default function Neighborhood() {
                     )}
                   </CardContent>
                 </Card>
+
+                {/* Healthcare Proximity Map (Task #16.3) */}
+                <div className="col-span-1 lg:col-span-2" data-testid="healthcare-map-wrapper">
+                  <HealthcareMap 
+                    neighborhoodName={neighborhood.name}
+                    centerLat={neighborhood.centerLat}
+                    centerLng={neighborhood.centerLng}
+                    facilities={healthcareFacilities}
+                  />
+                </div>
 
                 {/* Incline & Benches Index - Accessibility Score (Task #16.1) */}
                 <Card data-testid="card-accessibility" className="col-span-1 lg:col-span-2">
