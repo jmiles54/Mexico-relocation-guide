@@ -1,12 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, ArrowLeft, Waves, Users, Coffee, DollarSign, Shield, Sun, Video, ExternalLink, Heart, Zap, Scale, TrendingUp, Thermometer, ChevronRight, Mountain, RefreshCw, ShieldCheck, Wifi, CloudRain, AlertTriangle, Phone, MapPinned, Home, CheckSquare, PlaneTakeoff } from "lucide-react";
-import type { LiveRentalData } from "@shared/schema";
+import { MapPin, ArrowLeft, Waves, Users, Coffee, DollarSign, Shield, Sun, Video, ExternalLink, Heart, Zap, Scale, TrendingUp, Thermometer, ChevronRight, Mountain, RefreshCw, ShieldCheck, Wifi, CloudRain, AlertTriangle, Phone, MapPinned, Home, CheckSquare, PlaneTakeoff, User, Star } from "lucide-react";
+import type { LiveRentalData, PersonalFit } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "wouter";
 import WeatherWidget from "@/components/WeatherWidget";
 import CostBreakdown from "@/components/CostBreakdown";
@@ -114,6 +116,19 @@ export default function Neighborhood() {
   const [rentalLoading, setRentalLoading] = useState(false);
   const [rentalData, setRentalData] = useState<LiveRentalData | null>(null);
   const [rentalError, setRentalError] = useState<string | null>(null);
+
+  // Personal Fit Score State (Task #24)
+  const [personalFitLoading, setPersonalFitLoading] = useState(false);
+  const [personalFitData, setPersonalFitData] = useState<PersonalFit | null>(null);
+  const [personalFitError, setPersonalFitError] = useState<string | null>(null);
+  const [profileAge, setProfileAge] = useState('35');
+  const [profileJobType, setProfileJobType] = useState('Digital Nomad - High Bandwidth');
+  const [profileClimatePref, setProfileClimatePref] = useState('Warm & Low Humidity');
+  const [profileSafetyTolerance, setProfileSafetyTolerance] = useState('Moderate Tolerance');
+  const personalFitMountedRef = useRef(false);
+  const initialFetchCompleteRef = useRef(false);
+  const lastRequestedProfileRef = useRef<string | null>(null);
+  const pendingProfileRef = useRef<string | null>(null);
   
   const neighborhood = {
     cityId: 'pv' as const,
@@ -561,6 +576,44 @@ export default function Neighborhood() {
     }
   };
 
+  // Personal Fit Score Handler (Task #24)
+  const getPersonalFitScore = async () => {
+    setPersonalFitLoading(true);
+    setPersonalFitError(null);
+
+    const profile = {
+      age: profileAge,
+      nomadJobType: profileJobType,
+      climatePreference: profileClimatePref,
+      safetyTolerance: profileSafetyTolerance,
+    };
+
+    try {
+      const response = await fetch('/api/personal_fit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ city: neighborhood.city, profile })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch fit score');
+      }
+
+      const data: PersonalFit = await response.json();
+      setPersonalFitData(data);
+    } catch (error: any) {
+      console.error('Personal fit fetch error:', error);
+      setPersonalFitError(error.message || 'Failed to calculate Personal Fit Score.');
+      setPersonalFitData(null);
+    } finally {
+      setPersonalFitLoading(false);
+      initialFetchCompleteRef.current = true;
+      // Note: pendingProfileRef is NOT cleared here - the effect handles it
+      // When loading becomes false, the effect will check pendingProfileRef and replay if needed
+    }
+  };
+
   // Emergency Preparedness & Evacuation Resources Handler (Task #20)
   const getEmergencyPrep = async () => {
     setEmergencyLoading(true);
@@ -631,6 +684,75 @@ export default function Neighborhood() {
       getLiveRentalData();
     }
   }, [neighborhood.cityId]);
+
+  // Mount-only effect: Load Personal Fit Score once on initial render (Task #24)
+  useEffect(() => {
+    if (!personalFitMountedRef.current) {
+      personalFitMountedRef.current = true;
+      // Seed lastRequestedProfileRef with initial profile
+      lastRequestedProfileRef.current = JSON.stringify({
+        age: profileAge,
+        jobType: profileJobType,
+        climate: profileClimatePref,
+        safety: profileSafetyTolerance,
+      });
+      getPersonalFitScore();
+    }
+  }, []);
+
+  // Re-calculate Personal Fit Score when profile inputs change (Task #24)
+  // Uses profile snapshot pattern to handle changes during in-flight requests
+  useEffect(() => {
+    // Serialize current profile for comparison
+    const currentProfile = JSON.stringify({
+      age: profileAge,
+      jobType: profileJobType,
+      climate: profileClimatePref,
+      safety: profileSafetyTolerance,
+    });
+
+    // If currently loading (including initial fetch), queue the change for later
+    if (personalFitLoading || !initialFetchCompleteRef.current) {
+      pendingProfileRef.current = currentProfile;
+      return;
+    }
+
+    // Clear or ignore stale pending values that match lastRequestedProfileRef
+    if (pendingProfileRef.current === lastRequestedProfileRef.current) {
+      pendingProfileRef.current = null;
+    }
+
+    // Check if there's a pending profile from a mid-flight change
+    const profileToFetch = pendingProfileRef.current || currentProfile;
+    
+    // Only fetch if the profile has actually changed
+    if (profileToFetch !== lastRequestedProfileRef.current) {
+      lastRequestedProfileRef.current = profileToFetch;
+      pendingProfileRef.current = null;
+      getPersonalFitScore();
+    }
+  }, [profileAge, profileJobType, profileClimatePref, profileSafetyTolerance]);
+
+  // Replay pending changes when loading completes (Task #24)
+  useEffect(() => {
+    // Only run after initial fetch and when loading becomes false
+    if (!initialFetchCompleteRef.current || personalFitLoading) {
+      return;
+    }
+
+    // Clear stale pending values that match lastRequestedProfileRef
+    // But DON'T return - continue to check for other pending changes
+    if (pendingProfileRef.current === lastRequestedProfileRef.current) {
+      pendingProfileRef.current = null;
+    }
+
+    // Check if there's a queued profile change (including changes made during this render)
+    if (pendingProfileRef.current && pendingProfileRef.current !== lastRequestedProfileRef.current) {
+      lastRequestedProfileRef.current = pendingProfileRef.current;
+      pendingProfileRef.current = null;
+      getPersonalFitScore();
+    }
+  }, [personalFitLoading]);
 
   const costItems = [
     {
@@ -831,6 +953,31 @@ export default function Neighborhood() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Personal Fit Score Banner (Task #24) */}
+        {personalFitData && (
+          <div className="mb-8 p-6 bg-purple-50 dark:bg-purple-950/30 rounded-lg border border-purple-200 dark:border-purple-800 shadow-md flex flex-col md:flex-row items-center justify-between gap-4" data-testid="banner-fit-score">
+            <div className="flex items-center gap-4">
+              <Star className="w-8 h-8 text-purple-500 flex-shrink-0" />
+              <div className="space-y-1">
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400">
+                  Your Personal Fit Score for {neighborhood.city}
+                </h2>
+                <p className="text-3xl font-extrabold text-foreground" data-testid="text-fit-score">
+                  {personalFitData.personalFitScore}/100
+                </p>
+              </div>
+            </div>
+            <div className="mt-4 md:mt-0 md:w-2/3 md:text-right space-y-2">
+              <p className="text-sm italic text-muted-foreground" data-testid="text-fit-justification">
+                "{personalFitData.justification}"
+              </p>
+              <p className="text-xs text-purple-600 dark:text-purple-400 font-medium">
+                Best Fit: {personalFitData.highestScoringFactor} | Worst Fit: {personalFitData.lowestScoringFactor}
+              </p>
+            </div>
+          </div>
+        )}
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-7 h-auto" data-testid="tabs-navigation">
             <TabsTrigger value="overview" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground" data-testid="tab-overview">
@@ -857,6 +1004,178 @@ export default function Neighborhood() {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-8">
+            {/* Personalized Dashboard (Task #24) */}
+            <section>
+              <h2 className="text-2xl font-bold mb-6">Personalized Dashboard</h2>
+              <Card data-testid="card-personal-fit">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    <User className="w-5 h-5 text-purple-500" />
+                    Personal Fit Score for {neighborhood.city}
+                    {personalFitLoading && <span className="text-sm font-normal text-muted-foreground ml-2">(Analyzing...)</span>}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                    {/* Profile Input Form Column (2/5 width) */}
+                    <div className="lg:col-span-2 space-y-4">
+                      <p className="text-sm text-muted-foreground">
+                        Customize your profile to get a personalized fit score for {neighborhood.city}.
+                      </p>
+                      
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="select-age">Your Age</Label>
+                          <Select 
+                            value={profileAge} 
+                            onValueChange={setProfileAge}
+                            disabled={personalFitLoading}
+                          >
+                            <SelectTrigger id="select-age" data-testid="select-age">
+                              <SelectValue placeholder="Select age" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="25">25 (Young Professional)</SelectItem>
+                              <SelectItem value="35">35 (Mid-Career)</SelectItem>
+                              <SelectItem value="45">45 (Established)</SelectItem>
+                              <SelectItem value="55">55 (Pre-Retirement)</SelectItem>
+                              <SelectItem value="65">65 (Retired)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="select-job-type">Job Type / Lifestyle</Label>
+                          <Select 
+                            value={profileJobType} 
+                            onValueChange={setProfileJobType}
+                            disabled={personalFitLoading}
+                          >
+                            <SelectTrigger id="select-job-type" data-testid="select-job-type">
+                              <SelectValue placeholder="Select job type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Digital Nomad - High Bandwidth">Digital Nomad (High Bandwidth)</SelectItem>
+                              <SelectItem value="Digital Nomad - Moderate Bandwidth">Digital Nomad (Moderate)</SelectItem>
+                              <SelectItem value="Retired">Retired</SelectItem>
+                              <SelectItem value="Business Owner">Business Owner</SelectItem>
+                              <SelectItem value="Hybrid Remote">Hybrid Remote</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="select-climate-pref">Climate Preference</Label>
+                          <Select 
+                            value={profileClimatePref} 
+                            onValueChange={setProfileClimatePref}
+                            disabled={personalFitLoading}
+                          >
+                            <SelectTrigger id="select-climate-pref" data-testid="select-climate-pref">
+                              <SelectValue placeholder="Select climate preference" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Warm & Low Humidity">Warm & Low Humidity</SelectItem>
+                              <SelectItem value="Warm & High Humidity">Warm & High Humidity</SelectItem>
+                              <SelectItem value="Mild Year-Round">Mild Year-Round</SelectItem>
+                              <SelectItem value="Cool Highlands">Cool Highlands</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="select-safety-tolerance">Safety Tolerance</Label>
+                          <Select 
+                            value={profileSafetyTolerance} 
+                            onValueChange={setProfileSafetyTolerance}
+                            disabled={personalFitLoading}
+                          >
+                            <SelectTrigger id="select-safety-tolerance" data-testid="select-safety-tolerance">
+                              <SelectValue placeholder="Select safety tolerance" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Low Tolerance">Low Tolerance (High Safety Priority)</SelectItem>
+                              <SelectItem value="Moderate Tolerance">Moderate Tolerance</SelectItem>
+                              <SelectItem value="High Tolerance">High Tolerance (Adaptable)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Result Display Column (3/5 width) */}
+                    <div className={`lg:col-span-3 p-6 rounded-lg flex flex-col justify-center ${personalFitData ? 'bg-purple-500/10 border border-purple-500/50 dark:bg-purple-950 dark:border-purple-800' : 'bg-muted/50'}`}>
+                      {personalFitLoading ? (
+                        <div className="space-y-4">
+                          <Skeleton className="h-20 w-full" />
+                          <Skeleton className="h-8 w-3/4" />
+                          <Skeleton className="h-16 w-full" />
+                          <Skeleton className="h-24 w-full" />
+                        </div>
+                      ) : personalFitError ? (
+                        <div className="text-center space-y-4">
+                          <p className="text-sm text-destructive">{personalFitError}</p>
+                          <Button variant="outline" onClick={getPersonalFitScore} data-testid="button-retry-personal-fit">
+                            <RefreshCw className="w-4 h-4 mr-2" />
+                            Retry Analysis
+                          </Button>
+                        </div>
+                      ) : personalFitData ? (
+                        <div className="space-y-4">
+                          <div className="text-center">
+                            <p className="text-7xl font-extrabold text-purple-500 dark:text-purple-400" data-testid="text-fit-score">
+                              {personalFitData.personalFitScore}
+                            </p>
+                            <Badge className="mt-3 bg-purple-600 hover:bg-purple-700" data-testid="badge-fit-level">
+                              {personalFitData.fitLevel}
+                            </Badge>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <h4 className="font-semibold text-foreground">Why this score:</h4>
+                            <p className="text-sm text-muted-foreground italic" data-testid="text-fit-justification">
+                              "{personalFitData.justification}"
+                            </p>
+                          </div>
+                          
+                          {personalFitData.breakdown && personalFitData.breakdown.length > 0 && (
+                            <div className="space-y-2">
+                              <h4 className="font-semibold text-foreground">Score Breakdown:</h4>
+                              <div className="space-y-2">
+                                {personalFitData.breakdown.map((metric, idx) => (
+                                  <div key={idx} className="flex items-center justify-between text-sm">
+                                    <span className="text-foreground" data-testid={`text-breakdown-${metric.factor.toLowerCase().replace(/\s+/g, '-')}`}>
+                                      {metric.factor}
+                                    </span>
+                                    <span className="text-purple-500 dark:text-purple-400 font-semibold">
+                                      {metric.percentage}%
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          <div className="flex items-center justify-between text-xs text-muted-foreground pt-3 border-t border-purple-500/30">
+                            <span data-testid="text-highest-factor">
+                              ✓ Best: {personalFitData.highestScoringFactor}
+                            </span>
+                            <span data-testid="text-lowest-factor">
+                              ⚠ Lowest: {personalFitData.lowestScoringFactor}
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-muted-foreground py-4 text-center">
+                          Adjust your profile settings to see your personalized fit score for {neighborhood.city}.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
             {/* Key Metrics */}
             <section>
               <h2 className="text-2xl font-bold mb-6">Key Metrics</h2>
@@ -2056,6 +2375,108 @@ export default function Neighborhood() {
           Compare ({favorites.length})
         </Button>
       )}
+
+      {/* Task #24: Fixed Personal Profile Input Card */}
+      <Card 
+        className="fixed bottom-20 left-6 z-50 w-80 shadow-2xl transition-all duration-300"
+        data-testid="card-personal-profile-input"
+      >
+        <CardHeader className="py-3 px-4 bg-muted/50 border-b">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <User className="w-4 h-4 text-purple-500" />
+            My Relocation Profile
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-4 space-y-3">
+          <form onSubmit={(e) => { e.preventDefault(); getPersonalFitScore(); }} className="space-y-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="profile-age" className="text-xs font-medium">Age</Label>
+              <Select value={profileAge} onValueChange={setProfileAge}>
+                <SelectTrigger id="profile-age" data-testid="select-profile-age">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="25">25 (Young Professional)</SelectItem>
+                  <SelectItem value="35">35 (Mid-Career)</SelectItem>
+                  <SelectItem value="45">45 (Established)</SelectItem>
+                  <SelectItem value="55">55 (Pre-Retirement)</SelectItem>
+                  <SelectItem value="65">65 (Retired)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="profile-job" className="text-xs font-medium">Work Type</Label>
+              <Select value={profileJobType} onValueChange={setProfileJobType}>
+                <SelectTrigger id="profile-job" data-testid="select-profile-job">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Digital Nomad - High Bandwidth">Digital Nomad (High Bandwidth)</SelectItem>
+                  <SelectItem value="Digital Nomad - Moderate Bandwidth">Digital Nomad (Moderate)</SelectItem>
+                  <SelectItem value="Retired">Retired</SelectItem>
+                  <SelectItem value="Business Owner">Business Owner</SelectItem>
+                  <SelectItem value="Hybrid Remote">Hybrid Remote</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="profile-climate" className="text-xs font-medium">Climate Preference</Label>
+              <Select value={profileClimatePref} onValueChange={setProfileClimatePref}>
+                <SelectTrigger id="profile-climate" data-testid="select-profile-climate">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Warm & Low Humidity">Warm & Low Humidity</SelectItem>
+                  <SelectItem value="Warm & High Humidity">Warm & High Humidity</SelectItem>
+                  <SelectItem value="Mild Year-Round">Mild Year-Round</SelectItem>
+                  <SelectItem value="Cool Highlands">Cool Highlands</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="profile-safety" className="text-xs font-medium">Safety Tolerance</Label>
+              <Select value={profileSafetyTolerance} onValueChange={setProfileSafetyTolerance}>
+                <SelectTrigger id="profile-safety" data-testid="select-profile-safety">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Low Tolerance">Low Tolerance (High Safety Priority)</SelectItem>
+                  <SelectItem value="Moderate Tolerance">Moderate Tolerance</SelectItem>
+                  <SelectItem value="High Tolerance">High Tolerance (Adaptable)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <Button 
+              type="submit" 
+              className="w-full bg-purple-600 hover:bg-purple-700" 
+              disabled={personalFitLoading} 
+              data-testid="button-recalculate-fit"
+            >
+              {personalFitLoading ? (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  Calculating...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Recalculate Fit Score
+                </>
+              )}
+            </Button>
+            
+            {personalFitError && (
+              <p className="text-sm text-destructive text-center mt-2" data-testid="text-fit-error">
+                {personalFitError}
+              </p>
+            )}
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

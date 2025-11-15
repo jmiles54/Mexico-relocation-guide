@@ -93,3 +93,52 @@ export const liveRentalDataSchema = z.object({
 });
 
 export type LiveRentalData = z.infer<typeof liveRentalDataSchema>;
+
+export const personalFitSchema = z.object({
+  personalFitScore: z.coerce.number().int().min(50).max(100),
+  justification: z.string().min(50).max(500),
+  highestScoringFactor: z.enum([
+    'Safety & Crime',
+    'Climate & Weather',
+    'Digital Nomad Readiness',
+    'Social Scene & Community',
+    'Cost of Living',
+    'Healthcare & Accessibility',
+    'Cultural Amenities',
+    'Safety',
+    'Climate',
+    'Social',
+    'Cost',
+    'Healthcare',
+    'Infrastructure'
+  ]).or(z.string().min(10).max(100)),
+  lowestScoringFactor: z.enum([
+    'Safety & Crime',
+    'Climate & Weather',
+    'Digital Nomad Readiness',
+    'Social Scene & Community',
+    'Cost of Living',
+    'Healthcare & Accessibility',
+    'Cultural Amenities',
+    'Safety',
+    'Climate',
+    'Social',
+    'Cost',
+    'Healthcare',
+    'Infrastructure'
+  ]).or(z.string().min(10).max(100)),
+});
+
+export type PersonalFit = z.infer<typeof personalFitSchema>;
+
+export const personalFitRequestSchema = z.object({
+  city: z.string().min(1),
+  profile: z.object({
+    age: z.string().min(1),
+    nomadJobType: z.string().min(1),
+    climatePreference: z.string().min(1),
+    safetyTolerance: z.string().min(1),
+  }),
+});
+
+export type PersonalFitRequest = z.infer<typeof personalFitRequestSchema>;

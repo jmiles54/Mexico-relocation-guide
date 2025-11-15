@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import Groq from "groq-sdk";
-import { accessibilityScoreSchema, emergencyPrepSchema, liveRentalDataSchema, safetyRatingSchema, seasonalHazardSchema, socialVibeSchema, twoCityLogisticsSchema, wifiReadinessSchema } from "../shared/schema";
+import { accessibilityScoreSchema, emergencyPrepSchema, liveRentalDataSchema, personalFitRequestSchema, personalFitSchema, safetyRatingSchema, seasonalHazardSchema, socialVibeSchema, twoCityLogisticsSchema, wifiReadinessSchema } from "../shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Senior Comfort Score API endpoint
@@ -807,6 +807,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error('Live Rentals API Error:', error);
       return res.status(500).json({ error: 'Live rental index service failed to process request.' });
+    }
+  });
+
+  // Personalized Dashboard Fit Score API endpoint (Task #24)
+  app.post('/api/personal_fit', async (req, res) => {
+    try {
+      // Validate request body with Zod
+      const requestValidation = personalFitRequestSchema.safeParse(req.body);
+      
+      if (!requestValidation.success) {
+        return res.status(400).json({ 
+          error: "Invalid request parameters.",
+          details: requestValidation.error.errors 
+        });
+      }
+
+      const { city, profile } = requestValidation.data;
+      const { age, nomadJobType, climatePreference, safetyTolerance } = profile;
+
+      const apiKey = process.env.GROQ_API_KEY;
+      if (!apiKey) {
+        return res.status(503).json({ error: "Groq API key not found." });
+      }
+
+      const groq = new Groq({ apiKey });
+
+      const systemPrompt = (
+        "You are a sophisticated relocation recommendation engine. Your task is to generate a single, weighted 'Personal Fit Score' for the user's profile against the specified city. " +
+        "The score MUST be synthesized by intelligently combining known city scores: " +
+        "1. Safety/Crime Score (high weighting for safety-sensitive users). " +
+        "2. Climate Fit Score (high weighting for climate-preference matches). " +
+        "3. Digital Nomad Readiness Score (high weighting for remote workers). " +
+        "4. Social Vibe Score (personalized by 'age' in the profile). " +
+        "Output ONLY valid JSON with EXACTLY these four fields: " +
+        "{ \"personalFitScore\": <integer 50-100>, \"justification\": \"<A concise 2-3 sentence summary (MAX 400 characters) explaining why the score is this high/low, linking it to the user's profile>\", \"highestScoringFactor\": \"<Best match (e.g., Climate, Safety, Social)>\", \"lowestScoringFactor\": \"<Worst match (e.g., Nomad Readiness, Cost)>\" }"
+      );
+
+      const userCriteria = `Generate the Personal Fit Score for ${city} based on the following profile:\n- Age: ${age}\n- Job Type: ${nomadJobType}\n- Climate Preference: ${climatePreference}\n- Safety Tolerance: ${safetyTolerance}`;
+
+      const completion = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userCriteria }],
+        response_format: { type: "json_object" }
+      });
+
+      const jsonResponseText = completion.choices[0].message.content?.trim();
+      if (!jsonResponseText) {
+        console.error('Empty response from Groq LLM');
+        return res.status(500).json({ 
+          error: 'AI service returned empty response. Please try again.' 
+        });
+      }
+
+      let parsedData;
+      try {
+        parsedData = JSON.parse(jsonResponseText);
+      } catch (parseError) {
+        console.error('JSON parse error from Groq response:', parseError);
+        return res.status(500).json({ 
+          error: 'AI service returned invalid JSON. Please try again.' 
+        });
+      }
+
+      const validationResult = personalFitSchema.safeParse(parsedData);
+      
+      if (!validationResult.success) {
+        console.error('Groq response validation error:', validationResult.error);
+        return res.status(500).json({ 
+          error: 'AI service returned data in unexpected format. Please try again.',
+          details: validationResult.error.errors 
+        });
+      }
+
+      return res.json(validationResult.data);
+
+    } catch (error: any) {
+      console.error('Personal Fit API Error:', error);
+      return res.status(500).json({ 
+        error: 'AI personal fit service failed to process request.',
+        details: error.message 
+      });
     }
   });
 
