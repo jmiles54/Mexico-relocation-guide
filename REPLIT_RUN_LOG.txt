@@ -1,0 +1,26 @@
+REPLIT RUN LOG - Mexico Relocation Guide
+=========================================
+
+Server Status: RUNNING ✓
+Port: 5000
+Start Time: 11:07:31 AM (Nov 15, 2025)
+
+Full Console Output:
+-------------------
+> rest-express@1.0.0 dev
+> NODE_ENV=development tsx server/index.ts
+
+11:07:31 AM [express] serving on port 5000
+
+Browserslist: browsers data (caniuse-lite) is 13 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+
+Recent API Requests (Last 10 minutes):
+--------------------------------------
+11:07:38 AM [express] POST /api/city_sentiment 200 in 182ms :: {"label":"Tropical Retirement Paradise"}
+11:07:59 AM [express] POST /api/city_sentiment 200 in 159ms :: {"label":"Vibrant Coastal Paradise"}
+
+Server is HEALTHY and responding to requests.
