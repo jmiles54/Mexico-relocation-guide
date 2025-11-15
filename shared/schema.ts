@@ -74,3 +74,12 @@ export const emergencyPrepSchema = z.object({
 });
 
 export type EmergencyPrep = z.infer<typeof emergencyPrepSchema>;
+
+export const twoCityLogisticsSchema = z.object({
+  logisticsScore: z.number().int().min(50).max(100),
+  costEstimateSummary: z.string().min(50),
+  timingRecommendation: z.string().min(50),
+  complexityLevel: z.enum(['Low', 'Moderate', 'High', 'Very High']),
+});
+
+export type TwoCityLogistics = z.infer<typeof twoCityLogisticsSchema>;

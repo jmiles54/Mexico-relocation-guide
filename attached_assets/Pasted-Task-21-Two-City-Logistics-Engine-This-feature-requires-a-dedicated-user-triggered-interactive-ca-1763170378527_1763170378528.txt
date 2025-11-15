@@ -1,0 +1,159 @@
+Task #21: Two-City Logistics Engine
+This feature requires a dedicated, user-triggered interactive card. It will take two city inputs and a time split (e.g., "6 months beach, 6 months mountains") and use the Groq LLM to synthesize the logistical complexity.
+
+Step 1: Define the Schema (shared/schema.ts)
+You will need to define the structure for the AI's output, including the complexity score, cost estimate, and timing advice.
+
+File to Edit: shared/schema.ts
+
+TypeScript
+
+// shared/schema.ts (ADD THIS SCHEMA)
+
+import { z } from 'zod'; 
+// ... existing schemas ...
+
+export const twoCityLogisticsSchema = z.object({
+  logisticsScore: z.number().int().min(50).max(100), // 100 is easiest logistics
+  costEstimateSummary: z.string().min(50),
+  timingRecommendation: z.string().min(50),
+  complexityLevel: z.enum(['Low', 'Moderate', 'High', 'Very High']),
+});
+
+export type TwoCityLogistics = z.infer<typeof twoCityLogisticsSchema>;
+Step 2: Create the Backend Endpoint (server/routes.ts)
+Create a new POST route that accepts the two cities and the split, and sends a specialized prompt to Groq.
+
+File to Edit: server/routes.ts
+
+TypeScript
+
+// server/routes.ts (ADD THIS ROUTE)
+// Remember to import the new schema at the top:
+// import { twoCityLogisticsSchema } from '../shared/schema'; 
+
+// Two-City Logistics Engine API endpoint (Task #21)
+app.post('/api/two_city_logistics', async (req, res) => {
+    try {
+        const { city1, city2, splitSeason } = req.body;
+
+        if (!city1 || !city2 || !splitSeason) {
+            return res.status(400).json({ error: "Missing one or more required city/season parameters." });
+        }
+
+        const apiKey = process.env.GROQ_API_KEY;
+        if (!apiKey) {
+            return res.status(503).json({ error: "Groq API key not found." });
+        }
+
+        const groq = new Groq({ apiKey });
+
+        const systemPrompt = (
+            "You are a 'Snowbird' relocation expert specializing in seasonal split-living in Mexico. " +
+            "Analyze the logistical difficulty of maintaining a two-city residence split between the two specified cities for the given season profile. " +
+            "Consider factors like travel distance, regional rent costs, and optimal climate timing. " +
+            "Output ONLY valid JSON with EXACTLY these four fields: " +
+            "{ \"logisticsScore\": <integer 50-100>, \"costEstimateSummary\": \"<A 3-sentence summary of the estimated cost delta and duplicate expenses>\", \"timingRecommendation\": \"<A 3-sentence recommendation on the best months to move based on climate and housing availability>\", \"complexityLevel\": \"<Low|Moderate|High|Very High>\" }"
+        );
+
+        const userCriteria = `Analyze the logistical complexity of the split-residence plan:\n- City 1: ${city1}\n- City 2: ${city2}\n- Seasonal Split: ${splitSeason}`;
+
+        const completion = await groq.chat.completions.create({
+            model: "llama-3.3-70b-versatile",
+            messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userCriteria }],
+            response_format: { type: "json_object" }
+        });
+
+        const jsonResponseText = completion.choices[0].message.content?.trim();
+        // [Add full Zod validation and safe fallback here, similar to Task #17/19]
+
+        const logisticsData = JSON.parse(jsonResponseText);
+
+        return res.json(logisticsData);
+
+    } catch (error: any) {
+        console.error('Two-City Logistics API Error:', error);
+        return res.status(500).json({ error: 'AI logistics analysis failed.' });
+    }
+});
+Step 3: Create the Frontend UI (client/src/pages/Neighborhood.tsx)
+Add a new interactive card, preferably in the Overview Tab, below the Climate Fit Score (Task #15).
+
+State & Handler:
+
+TypeScript
+
+// client/src/pages/Neighborhood.tsx (State and Handlers)
+import { PlaneTakeoff, RefreshCw } from 'lucide-react'; // Add this import
+
+const [logisticsLoading, setLogisticsLoading] = useState(false);
+const [logisticsData, setLogisticsData] = useState<TwoCityLogistics | null>(null);
+const [logisticsError, setLogisticsError] = useState<string | null>(null);
+
+// Input States
+const [city1Input, setCity1Input] = useState(neighborhood.city);
+const [city2Input, setCity2Input] = useState('San Miguel de Allende');
+const [seasonSplitInput, setSeasonSplitInput] = useState('6 months Coast (Winter), 6 months Inland (Summer)');
+
+const getLogisticsAnalysis = async () => {
+    setLogisticsLoading(true);
+    setLogisticsError(null);
+    setLogisticsData(null);
+
+    try {
+        // [Add fetch call to /api/two_city_logistics using city1Input, city2Input, and seasonSplitInput]
+        // ... (Use the robust try-catch-fetch pattern from Tasks 17-19) ...
+
+    } catch (error: any) {
+         setLogisticsError(error.message || 'Failed to load logistics analysis.');
+    } finally {
+        setLogisticsLoading(false);
+    }
+};
+UI Component: Place this interactive card in the Overview tab.
+
+TypeScript
+
+{/* Two-City Logistics Engine (Task #21) */}
+<Card data-testid="card-two-city-logistics" className="col-span-1 lg:col-span-2">
+    <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-xl text-blue-500 dark:text-blue-300">
+            <PlaneTakeoff className="w-5 h-5" />
+            Two-City Logistics Engine (Snowbird Planner)
+        </CardTitle>
+    </CardHeader>
+    <CardContent className="p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            {/* Input Form Column */}
+            <form onSubmit={(e) => { e.preventDefault(); getLogisticsAnalysis(); }} className="lg:col-span-2 space-y-4">
+                {/* City 1 & 2 Inputs */}
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="city1">Primary City</Label>
+                        <Input id="city1" value={city1Input} onChange={(e) => setCity1Input(e.target.value)} required />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="city2">Second City</Label>
+                        <Input id="city2" value={city2Input} onChange={(e) => setCity2Input(e.target.value)} required />
+                    </div>
+                </div>
+                {/* Split Input */}
+                <div className="space-y-2">
+                    <Label htmlFor="splitSeason">Seasonal Split Profile</Label>
+                    <Input id="splitSeason" value={seasonSplitInput} onChange={(e) => setSeasonSplitInput(e.target.value)} required />
+                </div>
+                
+                {logisticsError && <p className="text-sm text-destructive">{logisticsError}</p>}
+                
+                <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={logisticsLoading}>
+                    {logisticsLoading ? 'Analyzing Logistics...' : 'Calculate Split Plan'}
+                </Button>
+            </form>
+
+            {/* Result Display Column */}
+            <div className={`lg:col-span-3 p-4 rounded-lg flex flex-col justify-center ${logisticsData ? 'bg-blue-500/10 border border-blue-500/50 dark:bg-blue-950 dark:border-blue-800' : 'bg-muted/50'}`}>
+                {/* [Add display logic for logisticsData, similar to Social Vibe and Climate Fit] */}
+            </div>
+        </div>
+    </CardContent>
+</Card>
