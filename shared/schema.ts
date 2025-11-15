@@ -54,3 +54,12 @@ export const socialVibeSchema = z.object({
 });
 
 export type SocialVibe = z.infer<typeof socialVibeSchema>;
+
+export const seasonalHazardSchema = z.object({
+  hazardRiskScore: z.number().int().min(1).max(100),
+  riskLevel: z.enum(['Low Risk', 'Moderate Risk', 'High Risk', 'Very High Risk']),
+  seasonalitySummary: z.string().min(40),
+  mitigationTip: z.string().min(30),
+});
+
+export type SeasonalHazard = z.infer<typeof seasonalHazardSchema>;
