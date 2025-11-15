@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, ArrowLeft, Waves, Users, Coffee, DollarSign, Shield, Sun, Video, ExternalLink, Heart, Zap, Scale, TrendingUp, Thermometer, ChevronRight, Mountain, RefreshCw } from "lucide-react";
+import { MapPin, ArrowLeft, Waves, Users, Coffee, DollarSign, Shield, Sun, Video, ExternalLink, Heart, Zap, Scale, TrendingUp, Thermometer, ChevronRight, Mountain, RefreshCw, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -47,6 +47,14 @@ export default function Neighborhood() {
     restSpotDetails: string;
   } | null>(null);
   const [accessibilityError, setAccessibilityError] = useState<string | null>(null);
+  const [safetyLoading, setSafetyLoading] = useState(false);
+  const [safetyData, setSafetyData] = useState<{
+    safetyScore: number;
+    safetyLevel: string;
+    crimeProfile: string;
+    recommendations: string;
+  } | null>(null);
+  const [safetyError, setSafetyError] = useState<string | null>(null);
   
   const neighborhood = {
     cityId: 'pv' as const,
@@ -217,6 +225,37 @@ export default function Neighborhood() {
     }
   };
 
+  const getSafetyRating = async () => {
+    setSafetyLoading(true);
+    setSafetyError(null);
+
+    try {
+      const response = await fetch('/api/safety_rating', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          city: neighborhood.city,
+          neighborhood: neighborhood.name
+        })
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok || data.error) {
+        throw new Error(data.error || 'Failed to load safety data');
+      }
+      
+      setSafetyData(data);
+      setSafetyError(null);
+    } catch (error: any) {
+      console.error('Safety rating fetch error:', error);
+      setSafetyError(error.message || 'Unable to load safety analysis. Please try again.');
+      setSafetyData(null);
+    } finally {
+      setSafetyLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!eventData && !eventLoading) {
       getSeasonalContent();
@@ -229,6 +268,9 @@ export default function Neighborhood() {
     }
     if (!accessibilityData && !accessibilityLoading) {
       getAccessibilityScore();
+    }
+    if (!safetyData && !safetyLoading) {
+      getSafetyRating();
     }
   }, [neighborhood.cityId]);
 
@@ -602,6 +644,86 @@ export default function Neighborhood() {
                     
                     {!sentimentData && !sentimentLoading && (
                       <p className="text-muted-foreground">Expat sentiment feed offline.</p>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Crime Safety Rating (Task #16.2) */}
+                <Card data-testid="card-safety" className="col-span-1 lg:col-span-2">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-xl">
+                      <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                      Safety & Security Profile
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    {safetyLoading && <p className="text-center text-primary">Analyzing safety conditions...</p>}
+                    
+                    {safetyError && !safetyLoading && (
+                      <div className="text-center space-y-4" data-testid="safety-error-state">
+                        <p className="text-destructive">{safetyError}</p>
+                        <Button 
+                          variant="outline" 
+                          onClick={getSafetyRating}
+                          data-testid="button-retry-safety"
+                          className="mx-auto"
+                        >
+                          <RefreshCw className="w-4 h-4 mr-2" />
+                          Retry Analysis
+                        </Button>
+                      </div>
+                    )}
+                    
+                    {safetyData && !safetyError && (
+                      <div className="space-y-6">
+                        {/* Score Header */}
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-muted-foreground">Safety Score</p>
+                            <p className="text-5xl font-extrabold text-emerald-400" data-testid="text-safety-score">
+                              {safetyData.safetyScore}/100
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <Badge variant="secondary" className="text-base px-4 py-2" data-testid="badge-safety-level">
+                              {safetyData.safetyLevel}
+                            </Badge>
+                          </div>
+                        </div>
+
+                        {/* Details Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {/* Crime Profile */}
+                          <div className="space-y-2">
+                            <h4 className="font-semibold text-foreground flex items-center gap-2">
+                              <Shield className="w-4 h-4 text-emerald-400" />
+                              Crime Profile
+                            </h4>
+                            <p className="text-sm text-muted-foreground" data-testid="text-crime-profile">
+                              {safetyData.crimeProfile}
+                            </p>
+                          </div>
+
+                          {/* Safety Recommendations */}
+                          <div className="space-y-2">
+                            <h4 className="font-semibold text-foreground flex items-center gap-2">
+                              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                              Safety Tips
+                            </h4>
+                            <p className="text-sm text-muted-foreground" data-testid="text-safety-recommendations">
+                              {safetyData.recommendations}
+                            </p>
+                          </div>
+                        </div>
+
+                        <p className="text-xs text-primary/70 text-center mt-4">
+                          *Analysis based on regional crime data synthesis. Always consult official sources and local authorities.
+                        </p>
+                      </div>
+                    )}
+                    
+                    {!safetyData && !safetyLoading && !safetyError && (
+                      <p className="text-muted-foreground">Safety data unavailable.</p>
                     )}
                   </CardContent>
                 </Card>

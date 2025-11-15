@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import Groq from "groq-sdk";
-import { accessibilityScoreSchema } from "../shared/schema";
+import { accessibilityScoreSchema, safetyRatingSchema } from "../shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Senior Comfort Score API endpoint
@@ -292,6 +292,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error('Expat Sentiment API Error:', error);
       return res.status(500).json({ error: 'AI sentiment analysis failed to process request.' });
+    }
+  });
+
+  // Crime Safety Rating API endpoint (Task #16.2)
+  app.post('/api/safety_rating', async (req, res) => {
+    try {
+      const { city, neighborhood } = req.body;
+
+      if (!city) {
+        return res.status(400).json({ error: "Missing city parameter." });
+      }
+
+      const apiKey = process.env.GROQ_API_KEY;
+      if (!apiKey) {
+        return res.status(503).json({ error: "Groq API key not found." });
+      }
+
+      const groq = new Groq({ apiKey });
+
+      const systemPrompt = (
+        "You are a public safety analyst specializing in crime statistics and expat safety for Mexican cities. " +
+        "Analyze the crime profile, safety conditions, and security considerations for the given city/neighborhood. " +
+        "Consider property crime, violent crime, tourist safety, police presence, and typical safety concerns. " +
+        "Output ONLY a JSON object with these fields: " +
+        "'safetyScore' (integer 1-100, where 100 is extremely safe), " +
+        "'safetyLevel' (string: MUST be exactly one of: 'Very Safe', 'Safe', 'Moderate Caution', or 'Caution Advised'), " +
+        "'crimeProfile' (2-3 sentence description of typical crime patterns, what crimes are most common, and target areas), " +
+        "'recommendations' (2-3 sentence practical safety tips for expats living in or visiting this area)."
+      );
+
+      const locationContext = neighborhood 
+        ? `Analyze the safety profile of ${neighborhood}, ${city}, Mexico for expats and long-term residents.`
+        : `Analyze the safety profile of ${city}, Mexico for expats and long-term residents.`;
+
+      const completion = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: locationContext }
+        ],
+        response_format: { type: "json_object" }
+      });
+
+      const jsonResponseText = completion.choices[0].message.content?.trim();
+      
+      if (!jsonResponseText) {
+        throw new Error('Empty response from LLM');
+      }
+
+      let parsedData;
+      try {
+        parsedData = JSON.parse(jsonResponseText);
+      } catch (parseError) {
+        console.error('JSON parse error:', parseError);
+        throw new Error('Invalid JSON response from LLM');
+      }
+
+      // Validate with Zod schema
+      const validationResult = safetyRatingSchema.safeParse(parsedData);
+      
+      if (!validationResult.success) {
+        console.error('Validation error:', validationResult.error);
+        // Return safe fallback on validation failure
+        return res.json({
+          safetyScore: 75,
+          safetyLevel: 'Safe',
+          crimeProfile: 'Safety analysis temporarily unavailable. Please consult local authorities and embassy resources for current safety information.',
+          recommendations: 'Exercise standard travel precautions: be aware of your surroundings, secure valuables, and stay informed about local conditions through official channels.'
+        });
+      }
+
+      return res.json(validationResult.data);
+
+    } catch (error: any) {
+      console.error('Safety Rating API Error:', error);
+      return res.status(500).json({ 
+        error: 'AI safety analysis failed to process request.',
+        details: error.message 
+      });
     }
   });
 

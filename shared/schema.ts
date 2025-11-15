@@ -27,3 +27,13 @@ export const accessibilityScoreSchema = z.object({
 });
 
 export type AccessibilityScore = z.infer<typeof accessibilityScoreSchema>;
+
+// Safety Rating Response Schema (Task #16.2)
+export const safetyRatingSchema = z.object({
+  safetyScore: z.number().int().min(1).max(100),
+  safetyLevel: z.enum(['Very Safe', 'Safe', 'Moderate Caution', 'Caution Advised']),
+  crimeProfile: z.string().min(30),
+  recommendations: z.string().min(30),
+});
+
+export type SafetyRating = z.infer<typeof safetyRatingSchema>;
