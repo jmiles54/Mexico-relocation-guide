@@ -1,0 +1,3 @@
+git add vercel.json
+git commit -m "Fix: Revert to 'routes' for SPA routing and confirm client/dist path"
+git push
