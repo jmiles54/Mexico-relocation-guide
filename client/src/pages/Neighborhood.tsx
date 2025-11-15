@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, ArrowLeft, Waves, Users, Coffee, DollarSign, Shield, Sun, Video, ExternalLink, Heart, Zap, Scale, TrendingUp, Thermometer, ChevronRight, Mountain, RefreshCw, ShieldCheck } from "lucide-react";
+import { MapPin, ArrowLeft, Waves, Users, Coffee, DollarSign, Shield, Sun, Video, ExternalLink, Heart, Zap, Scale, TrendingUp, Thermometer, ChevronRight, Mountain, RefreshCw, ShieldCheck, Wifi } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -56,6 +56,13 @@ export default function Neighborhood() {
     recommendations: string;
   } | null>(null);
   const [safetyError, setSafetyError] = useState<string | null>(null);
+  const [nomadLoading, setNomadLoading] = useState(false);
+  const [nomadData, setNomadData] = useState<{
+    readinessScore: number;
+    internetSummary: string;
+    bestProviderTip: string;
+  } | null>(null);
+  const [nomadError, setNomadError] = useState<string | null>(null);
   
   const neighborhood = {
     cityId: 'pv' as const,
@@ -343,6 +350,47 @@ export default function Neighborhood() {
     }
   };
 
+  const getNomadReadiness = async () => {
+    setNomadLoading(true);
+    setNomadError(null);
+
+    try {
+      const response = await fetch('/api/wifi_readiness', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ city: neighborhood.city })
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok || data.error) {
+        throw new Error(data.error || 'Failed to load digital nomad data');
+      }
+      
+      setNomadData(data);
+      setNomadError(null);
+    } catch (error: any) {
+      console.error('Nomad readiness fetch error:', error);
+      setNomadError(error.message || 'Unable to load digital nomad analysis. Please try again.');
+      setNomadData(null);
+    } finally {
+      setNomadLoading(false);
+    }
+  };
+
+  const shareScreenReport = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: `Relocation Report: ${neighborhood.name}, ${neighborhood.city}`,
+        text: "See my personalized report. Let's screen share this later!",
+        url: window.location.href
+      }).catch(err => console.error('Error sharing:', err));
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      alert(`Link copied! Send this to your family/partner and screen share the report. (${window.location.href})`);
+    }
+  };
+
   useEffect(() => {
     if (!eventData && !eventLoading) {
       getSeasonalContent();
@@ -358,6 +406,9 @@ export default function Neighborhood() {
     }
     if (!safetyData && !safetyLoading) {
       getSafetyRating();
+    }
+    if (!nomadData && !nomadLoading) {
+      getNomadReadiness();
     }
   }, [neighborhood.cityId]);
 
@@ -815,6 +866,67 @@ export default function Neighborhood() {
                   </CardContent>
                 </Card>
 
+                {/* Digital Nomad Readiness Score (Task #17) */}
+                <Card data-testid="card-nomad-readiness" className="col-span-1 lg:col-span-2">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-xl">
+                      <Wifi className="w-5 h-5 text-indigo-400 dark:text-indigo-300" />
+                      Digital Nomad Readiness Score
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    {nomadLoading && <p className="text-center text-primary">Assessing digital infrastructure...</p>}
+                    
+                    {nomadError && !nomadLoading && (
+                      <div className="text-center space-y-4" data-testid="nomad-error-state">
+                        <p className="text-destructive">{nomadError}</p>
+                        <Button 
+                          variant="outline" 
+                          onClick={getNomadReadiness}
+                          data-testid="button-retry-nomad"
+                          className="mx-auto"
+                        >
+                          <RefreshCw className="w-4 h-4 mr-2" />
+                          Retry Analysis
+                        </Button>
+                      </div>
+                    )}
+                    
+                    {nomadData && !nomadError && (
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
+                        {/* Score Column */}
+                        <div className="md:col-span-1 flex justify-center">
+                          <div className="relative w-32 h-32 flex items-center justify-center rounded-full bg-indigo-500/20 dark:bg-indigo-500/30">
+                            <p className="text-6xl font-extrabold text-indigo-400 dark:text-indigo-300" data-testid="text-readiness-score">
+                              {nomadData.readinessScore}
+                            </p>
+                            <span className="absolute bottom-2 right-2 text-sm text-indigo-400 dark:text-indigo-300">/100</span>
+                          </div>
+                        </div>
+                        
+                        {/* Summary & Tip Column */}
+                        <div className="md:col-span-3 space-y-3">
+                          <p className="text-lg font-semibold text-foreground">
+                            Internet & Reliability:
+                          </p>
+                          <p className="text-muted-foreground italic" data-testid="text-internet-summary">
+                            "{nomadData.internetSummary}"
+                          </p>
+                          <div className="bg-indigo-500/10 dark:bg-indigo-500/20 p-3 rounded-md">
+                            <p className="text-sm font-semibold text-indigo-300 dark:text-indigo-200">
+                              Top Provider Tip: <span data-testid="text-provider-tip">{nomadData.bestProviderTip}</span>
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {!nomadData && !nomadLoading && !nomadError && (
+                      <p className="text-muted-foreground">Digital nomad readiness feed offline.</p>
+                    )}
+                  </CardContent>
+                </Card>
+
                 {/* Healthcare Proximity Map (Task #16.3) */}
                 <div className="col-span-1 lg:col-span-2" data-testid="healthcare-map-wrapper">
                   <HealthcareMap 
@@ -1258,6 +1370,17 @@ export default function Neighborhood() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Task #17: Share & Screen-Share Button */}
+      <Button 
+        variant="secondary"
+        className="fixed bottom-20 right-6 z-50 p-4 text-sm font-semibold shadow-lg transition-all duration-300 hover:scale-[1.05] flex items-center gap-2"
+        onClick={shareScreenReport}
+        data-testid="button-share-report"
+      >
+        <Users className="w-5 h-5" />
+        Share & Screen-Share
+      </Button>
 
       {/* Task #12: Fixed Compare Button */}
       {favorites.length > 0 && (

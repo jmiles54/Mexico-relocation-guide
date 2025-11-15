@@ -1,0 +1,228 @@
+The remaining three ideas form the basis of our next two capstone tasks:
+
+Task #17: Digital Nomad Readiness Score (WIFI & Collaboration Focus)
+
+Task #18: Social & Singles Vibe Index
+
+Task #19: Split Calendar Logistics Engine
+
+Let's move immediately to address the critical need for remote workers: Task #17: Digital Nomad Readiness Score.
+
+💻 Task #17: Digital Nomad Readiness Score (WIFI & Screen Share)
+This feature combines a dynamic, AI-synthesized internet quality score with a simple, high-impact UX feature for family collaboration.
+
+1. Backend Endpoint (server/routes.ts)
+We will create a new /api/wifi_readiness endpoint to synthesize the internet quality, local cafe culture, and remote work viability.
+
+TypeScript
+
+// server/routes.ts (ADD THIS ROUTE)
+
+// Digital Nomad Readiness Score API endpoint (Task #17)
+app.post('/api/wifi_readiness', async (req, res) => {
+    try {
+        const { city } = req.body;
+
+        if (!city) {
+            return res.status(400).json({ error: "Missing city parameter." });
+        }
+
+        const apiKey = process.env.GROQ_API_KEY;
+        if (!apiKey) {
+            return res.status(503).json({ error: "Groq API key not found." });
+        }
+
+        const groq = new Groq({ apiKey });
+
+        const systemPrompt = (
+            "You are a remote work consultant and digital nomad expert. " +
+            "Analyze the specified city for its digital infrastructure. " +
+            "Based on the city's known average broadband speed, power reliability, and co-working/cafe culture, " +
+            "generate a 'Digital Nomad Readiness Score' out of 100. " +
+            "Output ONLY a JSON object with three fields: " +
+            "'readinessScore' (An integer from 60 to 99), " +
+            "'internetSummary' (A 3-sentence justification focusing on typical speed, reliability, and best local work areas), and " +
+            "'bestProviderTip' (A concise tip on the most reliable internet provider in that city)."
+        );
+
+        const completion = await groq.chat.completions.create({
+            model: "llama-3.3-70b-versatile",
+            messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: `Generate the Digital Nomad Readiness Score for ${city}.` }
+            ],
+            response_format: { type: "json_object" }
+        });
+
+        const jsonResponseText = completion.choices[0].message.content?.trim() || '{"readinessScore": 75, "internetSummary": "Data inconclusive.", "bestProviderTip": "Ask a local expat forum."}';
+        const nomadData = JSON.parse(jsonResponseText);
+
+        return res.json(nomadData);
+
+    } catch (error: any) {
+        console.error('Digital Nomad API Error:', error);
+        return res.status(500).json({ error: 'AI digital nomad service failed to process request.' });
+    }
+});
+2. Frontend Integration (client/src/pages/Neighborhood.tsx)
+This involves adding the state, handler, and UI card.
+
+Step 2A: Add Frontend State and Handler
+TypeScript
+
+// client/src/pages/Neighborhood.tsx (Add to State and Handlers)
+
+// Make sure to import Wifi icon:
+import { Wifi } from 'lucide-react'; 
+
+// New State for Digital Nomad Readiness (Task #17)
+const [nomadLoading, setNomadLoading] = useState(false);
+const [nomadData, setNomadData] = useState<{
+    readinessScore: number; 
+    internetSummary: string; 
+    bestProviderTip: string;
+} | null>(null);
+
+// New Handler
+const getNomadReadiness = async () => {
+    setNomadLoading(true);
+
+    try {
+        const response = await fetch('/api/wifi_readiness', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ city: neighborhood.city })
+        });
+
+        const data = await response.json();
+        if (response.ok && !data.error) {
+            setNomadData(data);
+        }
+    } catch (error) {
+        console.error('Fetch error:', error);
+    } finally {
+        setNomadLoading(false);
+    }
+};
+
+// Update the main useEffect hook to fetch this data on load
+useEffect(() => {
+    // ... existing calls (getSeasonalContent, getNeighborhoodHero, getExpatSentiment, etc.) ...
+    
+    // Task #17: Fetch Nomad Readiness
+    if (!nomadData && !nomadLoading) {
+        getNomadReadiness();
+    }
+}, [neighborhood.cityId]); 
+Step 2B: Add UI Card (Digital Nomad Readiness)
+Place this card in the Overview Tab, below the Crime Safety Rating Card (Task #16.2).
+
+TypeScript
+
+// client/src/pages/Neighborhood.tsx (Inside <TabsContent value="overview">)
+
+{/* Digital Nomad Readiness Score (Task #17) */}
+<Card data-testid="card-nomad-readiness" className="col-span-1 lg:col-span-2">
+    <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-xl">
+            <Wifi className="w-5 h-5 text-indigo-400" />
+            Digital Nomad Readiness Score
+        </CardTitle>
+    </CardHeader>
+    <CardContent className="p-6">
+        {nomadLoading && <p className="text-center text-primary">Assessing digital infrastructure...</p>}
+        
+        {nomadData && (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
+                {/* Score Column */}
+                <div className="md:col-span-1 flex justify-center">
+                    <div className="relative w-32 h-32 flex items-center justify-center rounded-full bg-indigo-500/20">
+                        <p className="text-6xl font-extrabold text-indigo-400" data-testid="text-readiness-score">
+                            {nomadData.readinessScore}
+                        </p>
+                        <span className="absolute bottom-2 right-2 text-sm text-indigo-400">/100</span>
+                    </div>
+                </div>
+                
+                {/* Summary & Tip Column */}
+                <div className="md:col-span-3 space-y-3">
+                    <p className="text-lg font-semibold text-foreground">
+                        Internet & Reliability:
+                    </p>
+                    <p className="text-muted-foreground italic" data-testid="text-internet-summary">
+                        "{nomadData.internetSummary}"
+                    </p>
+                    <div className="bg-indigo-500/10 p-3 rounded-md">
+                        <p className="text-sm font-semibold text-indigo-300">
+                            Top Provider Tip: <span data-testid="text-provider-tip">{nomadData.bestProviderTip}</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        )}
+        
+        {!nomadData && !nomadLoading && (
+            <p className="text-muted-foreground">Digital nomad readiness feed offline.</p>
+        )}
+    </CardContent>
+</Card>
+3. Frontend UX Enhancement (Screen Sharing)
+We can enhance the existing shareReport function to be more explicit for seniors and family sharing, as requested.
+
+We will add a dedicated button outside of the main content area (e.g., in the header or near the fixed compare button) to maximize visibility.
+
+TypeScript
+
+// client/src/pages/Neighborhood.tsx (Add a new handler)
+
+// New Handler for Screen Share (Task #17)
+const shareScreenReport = () => {
+    if (navigator.share) {
+        // Use native share API for modern browsers/mobile
+        navigator.share({
+            title: `Relocation Report: ${neighborhood.name}, ${neighborhood.city}`,
+            text: "See my personalized report. Let's screen share this later!",
+            url: window.location.href
+        }).catch(err => console.error('Error sharing:', err));
+    } else {
+        // Fallback for desktop: copy link
+        navigator.clipboard.writeText(window.location.href);
+        alert(`Link copied! Send this to your family/partner and screen share the report. (${window.location.href})`);
+    }
+};
+
+// client/src/pages/Neighborhood.tsx (Add the button below the main header/image)
+import { Users, Scale } from 'lucide-react';
+
+{/* Task #17: Screen Share Button */}
+<div className="fixed bottom-20 right-6 z-50">
+    <Button 
+        variant="secondary"
+        className="p-4 text-sm font-semibold shadow-lg transition-all duration-300 hover:scale-[1.05] flex items-center gap-2"
+        onClick={shareScreenReport}
+        data-testid="button-share-report"
+    >
+        <Users className="w-5 h-5" />
+        Share & Screen-Share
+    </Button>
+</div>
+
+{/* The existing Compare Button (Task #12) should be moved down slightly to accommodate this new button: */}
+{favorites.length > 0 && (
+    <Button 
+        className="fixed bottom-6 right-6 z-50 p-6 text-xl font-extrabold shadow-lg transition-all duration-300 hover:scale-[1.02]"
+        onClick={() => alert("Compare Drawer is ready! It needs to be placed in your main App.tsx to appear on this page.")}
+        data-testid="button-open-compare"
+    >
+        <Scale className="w-6 h-6 mr-3" />
+        Compare ({favorites.length})
+    </Button>
+)}
+Final Action:
+Add the new /api/wifi_readiness route to your Node.js server (server/routes.ts).
+
+Update client/src/pages/Neighborhood.tsx with the new state, handler, useEffect logic, and the Digital Nomad Readiness UI card.
+
+Implement the new shareScreenReport handler and the prominent "Share & Screen-Share" button on the neighborhood page.
+
+This completes all of Task #17!

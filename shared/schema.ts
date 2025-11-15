@@ -37,3 +37,12 @@ export const safetyRatingSchema = z.object({
 });
 
 export type SafetyRating = z.infer<typeof safetyRatingSchema>;
+
+// Digital Nomad Readiness Response Schema (Task #17)
+export const wifiReadinessSchema = z.object({
+  readinessScore: z.number().int().min(60).max(99),
+  internetSummary: z.string().min(40),
+  bestProviderTip: z.string().min(10),
+});
+
+export type WifiReadiness = z.infer<typeof wifiReadinessSchema>;

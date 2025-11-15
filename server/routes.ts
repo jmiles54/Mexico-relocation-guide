@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import Groq from "groq-sdk";
-import { accessibilityScoreSchema, safetyRatingSchema } from "../shared/schema";
+import { accessibilityScoreSchema, safetyRatingSchema, wifiReadinessSchema } from "../shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Senior Comfort Score API endpoint
@@ -369,6 +369,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Safety Rating API Error:', error);
       return res.status(500).json({ 
         error: 'AI safety analysis failed to process request.',
+        details: error.message 
+      });
+    }
+  });
+
+  // Digital Nomad Readiness Score API endpoint (Task #17)
+  app.post('/api/wifi_readiness', async (req, res) => {
+    try {
+      const { city } = req.body;
+
+      if (!city) {
+        return res.status(400).json({ error: "Missing city parameter." });
+      }
+
+      const apiKey = process.env.GROQ_API_KEY;
+      if (!apiKey) {
+        return res.status(503).json({ error: "Groq API key not found." });
+      }
+
+      const groq = new Groq({ apiKey });
+
+      const systemPrompt = (
+        "You are a remote work consultant and digital nomad expert. " +
+        "Analyze the specified city for its digital infrastructure. " +
+        "Based on the city's known average broadband speed, power reliability, and co-working/cafe culture, " +
+        "generate a 'Digital Nomad Readiness Score' out of 100. " +
+        "You MUST output ONLY valid JSON with EXACTLY these three fields (no additional fields): " +
+        "{ \"readinessScore\": <integer 60-99>, \"internetSummary\": \"<3 sentences about speed, reliability, and work areas>\", \"bestProviderTip\": \"<provider tip>\" }"
+      );
+
+      const completion = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: `Generate the Digital Nomad Readiness Score for ${city}.` }
+        ],
+        response_format: { type: "json_object" }
+      });
+
+      const jsonResponseText = completion.choices[0].message.content?.trim();
+      
+      if (!jsonResponseText) {
+        throw new Error('Empty response from LLM');
+      }
+
+      let parsedData;
+      try {
+        parsedData = JSON.parse(jsonResponseText);
+      } catch (parseError) {
+        console.error('JSON parse error:', parseError);
+        throw new Error('Invalid JSON response from LLM');
+      }
+
+      // Validate with Zod schema
+      const validationResult = wifiReadinessSchema.safeParse(parsedData);
+      
+      if (!validationResult.success) {
+        console.error('Validation error:', validationResult.error);
+        // Return safe fallback on validation failure
+        return res.json({
+          readinessScore: 75,
+          internetSummary: 'Digital infrastructure data currently unavailable for this location. Most major Mexican cities have reliable fiber optic connections, especially in expat-heavy neighborhoods. Co-working spaces typically offer backup generators and premium internet.',
+          bestProviderTip: 'Ask local expat forums for the most reliable provider in your specific neighborhood.'
+        });
+      }
+
+      return res.json(validationResult.data);
+
+    } catch (error: any) {
+      console.error('Digital Nomad API Error:', error);
+      return res.status(500).json({ 
+        error: 'AI digital nomad service failed to process request.',
         details: error.message 
       });
     }
