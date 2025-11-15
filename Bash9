@@ -1,0 +1,3 @@
+git add vercel.json client/index.html client/package.json vite.config.ts
+git commit -m "LAUNCH: Serve React app, delete all PDFs"
+git push
