@@ -12,6 +12,27 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+**November 15, 2025 - Task #20: Emergency Preparedness & Evacuation Resources**
+
+Added comprehensive emergency response feature to Safety tab for immediate life-safety scenarios:
+
+- **Backend API** (`/api/emergency_prep`): POST endpoint using Groq LLM (llama-3.3-70b-versatile) with explicit JSON structure to generate city-specific emergency resources including Protección Civil contact, national emergency number (911), evacuation routes with highway numbers, emergency shelter locations, preparedness checklists, and evacuation triggers. Includes Zod validation with Puerto Vallarta-specific fallback data.
+
+- **Frontend UI**: Red alert-themed card in Safety tab featuring emergency contacts (Protección Civil + 911), evacuation routes with highway directions, emergency shelter locations (schools, community centers), emergency kit essentials checklist, and critical "When to Evacuate" guidelines. Auto-loads on Safety tab visit with full dark mode support.
+
+- **Critical Information**: AI analyzes city-specific evacuation infrastructure including highway routes inland, typical shelter locations, and provides actionable guidance on when to evacuate (Category 3+ hurricanes, mandatory orders, storm surge warnings) vs when sheltering-in-place is appropriate.
+
+- **User Experience**: Auto-loading emergency resources when Safety tab is accessed. Includes retry mechanism for failed requests. Red alert visual theme with clearly organized sections for quick reference during emergencies.
+
+- **Test Coverage**: All interactive and display elements include data-testids: card-emergency-prep, text-proteccion-civil-phone, text-emergency-phone, text-evacuation-routes, text-shelter-locations, text-preparedness-checklist, text-evacuation-triggers, button-retry-emergency.
+
+**AI Integration Pattern**: 
+- Uses Groq API key from GROQ_API_KEY environment variable
+- Explicit JSON structure prompting with strict field requirements for emergency data
+- Schema validation via Zod (min character requirements for all fields)
+- Graceful fallback data on LLM/validation failures
+- Error handling with try-catch and user-facing retry mechanisms
+
 **November 15, 2025 - Task #19: Seasonal Hazard & Hurricane Risk Index**
 
 Added comprehensive seasonal hazard analysis feature to neighborhood detail pages:
