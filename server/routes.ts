@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import Groq from "groq-sdk";
-import { accessibilityScoreSchema, safetyRatingSchema, wifiReadinessSchema } from "../shared/schema";
+import { accessibilityScoreSchema, safetyRatingSchema, socialVibeSchema, wifiReadinessSchema } from "../shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Senior Comfort Score API endpoint
@@ -441,6 +441,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Digital Nomad API Error:', error);
       return res.status(500).json({ 
         error: 'AI digital nomad service failed to process request.',
+        details: error.message 
+      });
+    }
+  });
+
+  // Social & Singles Vibe Index API endpoint (Task #18)
+  app.post('/api/social_vibe', async (req, res) => {
+    try {
+      const { city, age } = req.body;
+
+      if (!city || !age) {
+        return res.status(400).json({ error: "Missing city or age parameter." });
+      }
+
+      const apiKey = process.env.GROQ_API_KEY;
+      if (!apiKey) {
+        return res.status(503).json({ error: "Groq API key not found." });
+      }
+
+      const groq = new Groq({ apiKey });
+
+      const systemPrompt = (
+        "You are a sophisticated social scene analyst and dating profile expert for Mexican cities. " +
+        "Analyze the social landscape for a single person of the specified age in this city. " +
+        "Generate a 'Social Vibe Score' out of 100. Score based on the density of other singles in that age group, " +
+        "the accessibility of meeting spots, and the general social openness. " +
+        "You MUST output ONLY valid JSON with EXACTLY these three fields (no additional fields): " +
+        "{ \"socialVibeScore\": <integer 50-100>, \"socialSceneJustification\": \"<A 3-sentence summary of the social density and openness for this age group>\", \"bestMeetingSpots\": \"<A concise list of 3 specific types of locations/activities where this age group meets>\" }"
+      );
+
+      const completion = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: `Generate the Social Vibe Index for a single person aged ${age} in ${city}.` }
+        ],
+        response_format: { type: "json_object" }
+      });
+
+      const jsonResponseText = completion.choices[0].message.content?.trim();
+      
+      if (!jsonResponseText) {
+        throw new Error('Empty response from LLM');
+      }
+
+      let parsedData;
+      try {
+        parsedData = JSON.parse(jsonResponseText);
+      } catch (parseError) {
+        console.error('JSON parse error:', parseError);
+        throw new Error('Invalid JSON response from LLM');
+      }
+
+      // Validate with Zod schema
+      const validationResult = socialVibeSchema.safeParse(parsedData);
+      
+      if (!validationResult.success) {
+        console.error('Validation error:', validationResult.error);
+        // Return safe fallback on validation failure
+        return res.json({
+          socialVibeScore: 70,
+          socialSceneJustification: `The local social scene data for age ${age} is currently being updated. In general, social life centers around expat groups and cultural clubs.`,
+          bestMeetingSpots: 'Coffee shops, weekly markets, expat meetups.'
+        });
+      }
+
+      return res.json(validationResult.data);
+
+    } catch (error: any) {
+      console.error('Social Vibe API Error:', error);
+      return res.status(500).json({ 
+        error: 'AI social analysis failed to process request.',
         details: error.message 
       });
     }
