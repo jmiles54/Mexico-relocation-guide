@@ -600,6 +600,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Missing one or more required city/season parameters." });
       }
 
+      if (typeof city1 !== 'string' || city1.trim().length < 2) {
+        return res.status(400).json({ error: "Invalid city1: must be at least 2 characters." });
+      }
+
+      if (typeof city2 !== 'string' || city2.trim().length < 2) {
+        return res.status(400).json({ error: "Invalid city2: must be at least 2 characters." });
+      }
+
+      if (typeof splitSeason !== 'string' || splitSeason.trim().length < 5) {
+        return res.status(400).json({ error: "Invalid splitSeason: must describe the time split." });
+      }
+
       const apiKey = process.env.GROQ_API_KEY;
       if (!apiKey) {
         return res.status(503).json({ error: "Groq API key not found." });
