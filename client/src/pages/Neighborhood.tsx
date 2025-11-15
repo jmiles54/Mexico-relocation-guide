@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MapPin, ArrowLeft, Waves, Users, Coffee, DollarSign, Shield, Sun, Video, ExternalLink, Heart, Zap, Scale, TrendingUp, Thermometer, ChevronRight, Mountain, RefreshCw, ShieldCheck, Wifi, CloudRain, AlertTriangle, Phone, MapPinned, Home, CheckSquare, PlaneTakeoff } from "lucide-react";
+import type { LiveRentalData } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -108,6 +109,11 @@ export default function Neighborhood() {
   const [city1Input, setCity1Input] = useState('');
   const [city2Input, setCity2Input] = useState('San Miguel de Allende');
   const [seasonSplitInput, setSeasonSplitInput] = useState('6 months Coast (Winter), 6 months Inland (Summer)');
+
+  // Live Rental Index Engine State (Task #22)
+  const [rentalLoading, setRentalLoading] = useState(false);
+  const [rentalData, setRentalData] = useState<LiveRentalData | null>(null);
+  const [rentalError, setRentalError] = useState<string | null>(null);
   
   const neighborhood = {
     cityId: 'pv' as const,
@@ -528,6 +534,33 @@ export default function Neighborhood() {
     }
   };
 
+  // Live Rental Index Engine Handler (Task #22)
+  const getLiveRentalData = async () => {
+    setRentalLoading(true);
+    setRentalError(null);
+
+    try {
+      const response = await fetch('/api/live_rentals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ city: neighborhood.city })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch live rental data');
+      }
+
+      const data: LiveRentalData = await response.json();
+      setRentalData(data);
+    } catch (error: any) {
+      console.error('Rental index fetch error:', error);
+      setRentalError(error.message || 'Failed to load live rental data.');
+    } finally {
+      setRentalLoading(false);
+    }
+  };
+
   // Emergency Preparedness & Evacuation Resources Handler (Task #20)
   const getEmergencyPrep = async () => {
     setEmergencyLoading(true);
@@ -593,6 +626,9 @@ export default function Neighborhood() {
     }
     if (!emergencyData && !emergencyLoading) {
       getEmergencyPrep();
+    }
+    if (!rentalData && !rentalLoading) {
+      getLiveRentalData();
     }
   }, [neighborhood.cityId]);
 
