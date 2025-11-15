@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import Groq from "groq-sdk";
-import { accessibilityScoreSchema, safetyRatingSchema, socialVibeSchema, wifiReadinessSchema } from "../shared/schema";
+import { accessibilityScoreSchema, safetyRatingSchema, seasonalHazardSchema, socialVibeSchema, wifiReadinessSchema } from "../shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Senior Comfort Score API endpoint
@@ -513,6 +513,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Social Vibe API Error:', error);
       return res.status(500).json({ 
         error: 'AI social analysis failed to process request.',
+        details: error.message 
+      });
+    }
+  });
+
+  // Seasonal Hazard & Hurricane Risk Index API endpoint (Task #19)
+  app.post('/api/seasonal_hazard', async (req, res) => {
+    try {
+      const { city } = req.body;
+
+      if (!city) {
+        return res.status(400).json({ error: "Missing city parameter." });
+      }
+
+      const apiKey = process.env.GROQ_API_KEY;
+      if (!apiKey) {
+        return res.status(503).json({ error: "Groq API key not found." });
+      }
+
+      const groq = new Groq({ apiKey });
+
+      const systemPrompt = (
+        "You are a climate risk analyst and emergency preparedness expert specializing in Mexican coastal cities. " +
+        "Analyze the seasonal hazard profile for the specified city, focusing on hurricanes, tropical storms, flooding, and extreme weather. " +
+        "Consider historical hurricane tracks, flood zones, and seasonal patterns. " +
+        "Generate a 'Seasonal Hazard Risk Score' from 1-100 (where 1 is safest, 100 is highest risk). " +
+        "You MUST output ONLY valid JSON with EXACTLY these four fields (no additional fields): " +
+        "{ \"hazardRiskScore\": <integer 1-100>, \"riskLevel\": \"<MUST be exactly one of: 'Low Risk', 'Moderate Risk', 'High Risk', or 'Very High Risk'>\", \"seasonalitySummary\": \"<2-3 sentences describing peak risk months and typical hazard patterns>\", \"mitigationTip\": \"<Specific actionable advice on insurance, elevation, evacuation routes, or structural requirements>\" }"
+      );
+
+      const completion = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: `Generate the Seasonal Hazard & Hurricane Risk Index for ${city}, Mexico.` }
+        ],
+        response_format: { type: "json_object" }
+      });
+
+      const jsonResponseText = completion.choices[0].message.content?.trim();
+      
+      if (!jsonResponseText) {
+        throw new Error('Empty response from LLM');
+      }
+
+      let parsedData;
+      try {
+        parsedData = JSON.parse(jsonResponseText);
+      } catch (parseError) {
+        console.error('JSON parse error:', parseError);
+        throw new Error('Invalid JSON response from LLM');
+      }
+
+      // Validate with Zod schema
+      const validationResult = seasonalHazardSchema.safeParse(parsedData);
+      
+      if (!validationResult.success) {
+        console.error('Validation error:', validationResult.error);
+        // Return safe fallback on validation failure
+        return res.json({
+          hazardRiskScore: 35,
+          riskLevel: 'Moderate Risk',
+          seasonalitySummary: 'Seasonal hazard data is currently being updated for this location. Mexican coastal cities typically experience hurricane season from June through November, with peak activity in August and September.',
+          mitigationTip: 'Consult local authorities for evacuation routes and consider comprehensive insurance coverage that includes flood and wind damage.'
+        });
+      }
+
+      return res.json(validationResult.data);
+
+    } catch (error: any) {
+      console.error('Seasonal Hazard API Error:', error);
+      return res.status(500).json({ 
+        error: 'AI seasonal hazard analysis failed to process request.',
         details: error.message 
       });
     }

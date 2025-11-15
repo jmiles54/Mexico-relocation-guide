@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, ArrowLeft, Waves, Users, Coffee, DollarSign, Shield, Sun, Video, ExternalLink, Heart, Zap, Scale, TrendingUp, Thermometer, ChevronRight, Mountain, RefreshCw, ShieldCheck, Wifi } from "lucide-react";
+import { MapPin, ArrowLeft, Waves, Users, Coffee, DollarSign, Shield, Sun, Video, ExternalLink, Heart, Zap, Scale, TrendingUp, Thermometer, ChevronRight, Mountain, RefreshCw, ShieldCheck, Wifi, CloudRain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -73,6 +73,16 @@ export default function Neighborhood() {
   } | null>(null);
   const [ageInput, setAgeInput] = useState('55');
   const [socialError, setSocialError] = useState<string | null>(null);
+
+  // Seasonal Hazard & Hurricane Risk State (Task #19)
+  const [hazardLoading, setHazardLoading] = useState(false);
+  const [hazardData, setHazardData] = useState<{
+    hazardRiskScore: number;
+    riskLevel: string;
+    seasonalitySummary: string;
+    mitigationTip: string;
+  } | null>(null);
+  const [hazardError, setHazardError] = useState<string | null>(null);
   
   const neighborhood = {
     cityId: 'pv' as const,
@@ -419,6 +429,35 @@ export default function Neighborhood() {
     }
   };
 
+  // Seasonal Hazard & Hurricane Risk Handler (Task #19)
+  const getSeasonalHazard = async () => {
+    setHazardLoading(true);
+    setHazardError(null);
+
+    try {
+      const response = await fetch('/api/seasonal_hazard', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ city: neighborhood.city })
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok || data.error) {
+        throw new Error(data.error || 'Failed to load seasonal hazard data');
+      }
+      
+      setHazardData(data);
+      setHazardError(null);
+    } catch (error: any) {
+      console.error('Seasonal hazard fetch error:', error);
+      setHazardError(error.message || 'Unable to load seasonal hazard analysis. Please try again.');
+      setHazardData(null);
+    } finally {
+      setHazardLoading(false);
+    }
+  };
+
   const shareScreenReport = () => {
     if (navigator.share) {
       navigator.share({
@@ -450,6 +489,9 @@ export default function Neighborhood() {
     }
     if (!nomadData && !nomadLoading) {
       getNomadReadiness();
+    }
+    if (!hazardData && !hazardLoading) {
+      getSeasonalHazard();
     }
   }, [neighborhood.cityId]);
 
