@@ -1,0 +1,2 @@
+git rm -r *.pdf *.md *.txt *.png *.jpg *.jpeg *.zip *.log *.json
+git rm -r attached_assets/ Bash* PROJECT* REPLIT* SHARE* generated* home* live* neighborhood* seasonal* step* verse*
