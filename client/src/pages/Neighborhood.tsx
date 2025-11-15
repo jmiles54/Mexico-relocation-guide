@@ -1090,6 +1090,73 @@ export default function Neighborhood() {
                   </CardContent>
                 </Card>
 
+                {/* Seasonal Hazard & Hurricane Risk Index (Task #19) */}
+                <Card data-testid="card-seasonal-hazard" className="col-span-1 lg:col-span-2">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-xl">
+                      <CloudRain className="w-5 h-5 text-amber-500 dark:text-amber-400" />
+                      Seasonal Hazard & Hurricane Risk Index
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {hazardLoading ? (
+                      <div className="flex flex-col items-center justify-center py-12">
+                        <RefreshCw className="w-8 h-8 text-amber-500 animate-spin mb-3" />
+                        <p className="text-sm text-muted-foreground">Analyzing seasonal hazard risk...</p>
+                      </div>
+                    ) : hazardError ? (
+                      <div className="text-center py-8 space-y-4">
+                        <p className="text-sm text-destructive">{hazardError}</p>
+                        <Button variant="outline" onClick={getSeasonalHazard} data-testid="button-retry-hazard">
+                          <RefreshCw className="w-4 h-4 mr-2" />
+                          Retry Analysis
+                        </Button>
+                      </div>
+                    ) : hazardData ? (
+                      <div className="space-y-4">
+                        {/* Risk Score Display */}
+                        <div className="bg-amber-500/10 border border-amber-500/50 dark:bg-amber-950 dark:border-amber-800 rounded-lg p-6 text-center">
+                          <p className="text-6xl font-extrabold text-amber-500 dark:text-amber-400" data-testid="text-hazard-score">
+                            {hazardData.hazardRiskScore}/100
+                          </p>
+                          <Badge 
+                            className={`mt-3 ${
+                              hazardData.riskLevel === 'Low Risk' ? 'bg-green-600 hover:bg-green-700' :
+                              hazardData.riskLevel === 'Moderate Risk' ? 'bg-yellow-600 hover:bg-yellow-700' :
+                              hazardData.riskLevel === 'High Risk' ? 'bg-orange-600 hover:bg-orange-700' :
+                              'bg-red-600 hover:bg-red-700'
+                            }`}
+                            data-testid="badge-risk-level"
+                          >
+                            {hazardData.riskLevel}
+                          </Badge>
+                        </div>
+
+                        {/* Seasonality Summary */}
+                        <div>
+                          <h4 className="font-semibold text-foreground mb-2">Seasonal Patterns:</h4>
+                          <p className="text-sm text-muted-foreground" data-testid="text-seasonality-summary">
+                            {hazardData.seasonalitySummary}
+                          </p>
+                        </div>
+
+                        {/* Mitigation Tip */}
+                        <div className="bg-muted/50 rounded-lg p-4 border border-amber-500/30">
+                          <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
+                            <ShieldCheck className="w-4 h-4 text-amber-500" />
+                            Safety Tip:
+                          </h4>
+                          <p className="text-sm text-muted-foreground" data-testid="text-mitigation-tip">
+                            {hazardData.mitigationTip}
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-center py-8 text-muted-foreground">Loading seasonal hazard data...</p>
+                    )}
+                  </CardContent>
+                </Card>
+
                 {/* Healthcare Proximity Map (Task #16.3) */}
                 <div className="col-span-1 lg:col-span-2" data-testid="healthcare-map-wrapper">
                   <HealthcareMap 
