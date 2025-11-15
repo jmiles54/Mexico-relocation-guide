@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import Groq from "groq-sdk";
-import { accessibilityScoreSchema, emergencyPrepSchema, safetyRatingSchema, seasonalHazardSchema, socialVibeSchema, twoCityLogisticsSchema, wifiReadinessSchema } from "../shared/schema";
+import { accessibilityScoreSchema, emergencyPrepSchema, liveRentalDataSchema, safetyRatingSchema, seasonalHazardSchema, socialVibeSchema, twoCityLogisticsSchema, wifiReadinessSchema } from "../shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Senior Comfort Score API endpoint
@@ -753,6 +753,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
         error: 'AI emergency preparedness analysis failed to process request.',
         details: error.message 
       });
+    }
+  });
+
+  // Live Rental Index Engine API endpoint (Task #22)
+  app.post('/api/live_rentals', async (req, res) => {
+    // NOTE: This endpoint currently returns MOCKED data.
+    // In production, this would read from a database populated by a scraping worker.
+
+    try {
+      const { city } = req.body;
+      if (!city) {
+        return res.status(400).json({ error: "Missing city parameter." });
+      }
+
+      // --- MOCK DATA GENERATION ---
+      const prices: { [key: string]: number } = {
+        'puerto vallarta': 1400,
+        'san miguel de allende': 1150,
+        'merida': 750,
+        'cancun': 1300,
+        'playa del carmen': 1350,
+        'tulum': 1500,
+        'guadalajara': 900,
+        'oaxaca': 800,
+        'guanajuato': 850,
+        'queretaro': 950,
+      };
+
+      const cityPrice = prices[city.toLowerCase()] || 1000;
+
+      const mockData = {
+        medianPriceUSD: cityPrice,
+        unitType: 'Median 2 Bedroom Apartment (90 Day Lease)',
+        dataSourceCount: Math.floor(Math.random() * 50) + 150,
+        lastUpdated: new Date().toISOString(),
+        marketSummary: cityPrice >= 1300 
+          ? `Prices in ${city} are currently high due to peak winter demand, showing a 7% increase month-over-month. Expect intense competition for turn-key properties.`
+          : `The rental market in ${city} remains stable and moderately priced. Availability is good outside the major tourist areas.`,
+      };
+      // --- END MOCK DATA ---
+
+      // Validation against the schema (even the mock data should be clean)
+      const validationResult = liveRentalDataSchema.safeParse(mockData);
+
+      if (!validationResult.success) {
+        console.error('Mock data failed validation:', validationResult.error);
+        return res.status(500).json({ error: 'Data source is offline or corrupted.' });
+      }
+
+      return res.json(validationResult.data);
+
+    } catch (error: any) {
+      console.error('Live Rentals API Error:', error);
+      return res.status(500).json({ error: 'Live rental index service failed to process request.' });
     }
   });
 
