@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, ArrowLeft, Waves, Users, Coffee, DollarSign, Shield, Sun, Video, ExternalLink, Heart, Zap, Scale, TrendingUp, Thermometer, ChevronRight, Mountain, RefreshCw, ShieldCheck, Wifi, CloudRain, AlertTriangle, Phone, MapPinned, Home, CheckSquare } from "lucide-react";
+import { MapPin, ArrowLeft, Waves, Users, Coffee, DollarSign, Shield, Sun, Video, ExternalLink, Heart, Zap, Scale, TrendingUp, Thermometer, ChevronRight, Mountain, RefreshCw, ShieldCheck, Wifi, CloudRain, AlertTriangle, Phone, MapPinned, Home, CheckSquare, PlaneTakeoff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -95,6 +95,19 @@ export default function Neighborhood() {
     evacuationTriggers: string;
   } | null>(null);
   const [emergencyError, setEmergencyError] = useState<string | null>(null);
+
+  // Two-City Logistics Engine State (Task #21)
+  const [logisticsLoading, setLogisticsLoading] = useState(false);
+  const [logisticsData, setLogisticsData] = useState<{
+    logisticsScore: number;
+    costEstimateSummary: string;
+    timingRecommendation: string;
+    complexityLevel: string;
+  } | null>(null);
+  const [logisticsError, setLogisticsError] = useState<string | null>(null);
+  const [city1Input, setCity1Input] = useState('');
+  const [city2Input, setCity2Input] = useState('San Miguel de Allende');
+  const [seasonSplitInput, setSeasonSplitInput] = useState('6 months Coast (Winter), 6 months Inland (Summer)');
   
   const neighborhood = {
     cityId: 'pv' as const,
@@ -104,6 +117,13 @@ export default function Neighborhood() {
     centerLat: 20.6075,
     centerLng: -105.2375
   };
+
+  // Initialize city1Input with neighborhood city on mount
+  useEffect(() => {
+    if (!city1Input) {
+      setCity1Input(neighborhood.city);
+    }
+  }, []);
 
   // Healthcare facilities near Zona Romántica, Puerto Vallarta
   const healthcareFacilities = [
@@ -466,6 +486,39 @@ export default function Neighborhood() {
       setHazardData(null);
     } finally {
       setHazardLoading(false);
+    }
+  };
+
+  // Two-City Logistics Engine Handler (Task #21)
+  const getLogisticsAnalysis = async () => {
+    setLogisticsLoading(true);
+    setLogisticsError(null);
+    setLogisticsData(null);
+
+    try {
+      const response = await fetch('/api/two_city_logistics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          city1: city1Input, 
+          city2: city2Input, 
+          splitSeason: seasonSplitInput 
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch logistics analysis');
+      }
+
+      const data = await response.json();
+      setLogisticsData(data);
+    } catch (error: any) {
+      console.error('Logistics analysis fetch error:', error);
+      setLogisticsError(error.message || 'Unable to load logistics analysis. Please try again.');
+      setLogisticsData(null);
+    } finally {
+      setLogisticsLoading(false);
     }
   };
 
@@ -1348,6 +1401,136 @@ export default function Neighborhood() {
                           <p className="text-muted-foreground py-4">
                             Enter your temperature ranges and humidity preference to get an instant Climate Fit Score.
                           </p>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Two-City Logistics Engine (Task #21) */}
+                <Card data-testid="card-two-city-logistics" className="col-span-1 lg:col-span-2">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-xl text-blue-500 dark:text-blue-300">
+                      <PlaneTakeoff className="w-5 h-5" />
+                      Two-City Logistics Engine (Snowbird Planner)
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                      {/* Input Form Column */}
+                      <form onSubmit={(e) => { e.preventDefault(); getLogisticsAnalysis(); }} className="lg:col-span-2 space-y-4">
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Planning to split your time between two cities? Get AI-powered logistics analysis for your snowbird lifestyle.
+                        </p>
+                        
+                        {/* City 1 & 2 Inputs */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="city1">Primary City</Label>
+                            <Input 
+                              id="city1" 
+                              value={city1Input} 
+                              onChange={(e) => setCity1Input(e.target.value)} 
+                              required 
+                              data-testid="input-city1"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="city2">Second City</Label>
+                            <Input 
+                              id="city2" 
+                              value={city2Input} 
+                              onChange={(e) => setCity2Input(e.target.value)} 
+                              required 
+                              data-testid="input-city2"
+                            />
+                          </div>
+                        </div>
+                        
+                        {/* Split Input */}
+                        <div className="space-y-2">
+                          <Label htmlFor="splitSeason">Seasonal Split Profile</Label>
+                          <Input 
+                            id="splitSeason" 
+                            value={seasonSplitInput} 
+                            onChange={(e) => setSeasonSplitInput(e.target.value)} 
+                            required 
+                            data-testid="input-split-season"
+                            placeholder="e.g., 6 months beach, 6 months mountains"
+                          />
+                        </div>
+                        
+                        {logisticsError && <p className="text-sm text-destructive" data-testid="text-logistics-error">{logisticsError}</p>}
+                        
+                        <Button 
+                          type="submit" 
+                          className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800" 
+                          disabled={logisticsLoading}
+                          data-testid="button-calculate-logistics"
+                        >
+                          {logisticsLoading ? (
+                            <>
+                              <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                              Analyzing Logistics...
+                            </>
+                          ) : (
+                            'Calculate Split Plan'
+                          )}
+                        </Button>
+                      </form>
+
+                      {/* Result Display Column */}
+                      <div className={`lg:col-span-3 p-4 rounded-lg flex flex-col justify-center ${logisticsData ? 'bg-blue-500/10 border border-blue-500/50 dark:bg-blue-950 dark:border-blue-800' : 'bg-muted/50'}`}>
+                        {logisticsData ? (
+                          <div className="space-y-4">
+                            {/* Logistics Score */}
+                            <div className="text-center pb-4 border-b border-blue-500/30 dark:border-blue-700/30">
+                              <p className="text-6xl font-extrabold text-blue-500 dark:text-blue-400" data-testid="text-logistics-score">
+                                {logisticsData.logisticsScore}<span className="text-3xl">/100</span>
+                              </p>
+                              <Badge 
+                                variant={
+                                  logisticsData.complexityLevel === 'Low' ? 'default' :
+                                  logisticsData.complexityLevel === 'Moderate' ? 'secondary' :
+                                  logisticsData.complexityLevel === 'High' ? 'destructive' :
+                                  'destructive'
+                                }
+                                className="mt-2"
+                                data-testid="badge-complexity-level"
+                              >
+                                {logisticsData.complexityLevel} Complexity
+                              </Badge>
+                            </div>
+                            
+                            {/* Cost Estimate */}
+                            <div>
+                              <h4 className="font-semibold text-sm text-muted-foreground mb-2 flex items-center gap-1">
+                                <DollarSign className="w-4 h-4" />
+                                Cost Analysis
+                              </h4>
+                              <p className="text-sm" data-testid="text-cost-estimate">
+                                {logisticsData.costEstimateSummary}
+                              </p>
+                            </div>
+                            
+                            {/* Timing Recommendation */}
+                            <div>
+                              <h4 className="font-semibold text-sm text-muted-foreground mb-2 flex items-center gap-1">
+                                <Sun className="w-4 h-4" />
+                                Optimal Timing
+                              </h4>
+                              <p className="text-sm" data-testid="text-timing-recommendation">
+                                {logisticsData.timingRecommendation}
+                              </p>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-center py-8">
+                            <PlaneTakeoff className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
+                            <p className="text-muted-foreground text-sm">
+                              Enter your two cities and seasonal split to analyze logistics complexity and costs
+                            </p>
+                          </div>
                         )}
                       </div>
                     </div>
