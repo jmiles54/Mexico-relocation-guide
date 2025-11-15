@@ -1,0 +1,164 @@
+Below is a step-by-step Replit cheat-sheet that will take the code you already have (React + Vite front-end and Express back-end) and make the whole portal publicly reachable in under 10 minutes.
+Everything is written for the exact files you shared (package.json, server/index.ts, client/…, etc.) and the logs you posted.
+
+QUICK REPLIT RECIPE (3 steps)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#What to doExact commands / file edits1Create a replit.nix file (tells Replit what runtime to use)In the file-tree click + New File → name it replit.nix → paste: 
+```nix2Add a production start script + .replit config1. Open package.json → replace the scripts block with: 
+json<br>"scripts": {<br>  "dev": "vite",<br>  "build": "vite build",<br>  "preview": "vite preview",<br>  "start": "npm run build && node server/index.js"<br>}<br>
+
+2. Click + New File → name it .replit → paste: 
+toml<br>run = "npm run start"<br>web = { port = 3000 }<br>3Commit, push, and verifyIn the Shell (bottom pane) run: 
+bash<br>git add .<br>git commit -m "enable production deploy"<br>git push<br>
+Wait 10-15 s → Replit will show “Your site is live” with a URL like https://<your-repl-name>.<your-username>.repl.co. Open it.
+That’s it. The front-end will be built into /dist and served by the Express server on the same port, so no CORS headaches and one public URL.
+
+FULL DETAILED WALK-THROUGH (copy-paste ready)
+1. replit.nix
+nix{ pkgs }: {
+  deps = [
+    pkgs.nodejs_20
+  ];
+  env = {
+    PORT = "3000";
+  };
+}
+Why? Replit now knows to install Node 20 and to forward port 3000 to the web.
+
+2. package.json – scripts section
+json{
+  "name": "mexico-relocation-guide",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "npm run build && node server/index.js"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "express": "^4.19.2",
+    "groq-sdk": "^0.3.0",
+    ... (rest of your deps)
+  }
+}
+Key line: "start": "npm run build && node server/index.js"
+
+vite build → creates a static /dist folder.
+node server/index.js → Express serves that folder and your API routes.
+
+
+3. Express static serving (add once if not already there)
+Open server/index.ts (or server/index.js) and make sure you have:
+tsimport express from "express";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// API routes (you already have them)
+app.use("/api", yourApiRouter);
+
+// Serve built React app
+app.use(express.static(path.join(__dirname, "../dist")));
+
+// SPA fallback
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../dist", "index.html"));
+});
+
+app.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
+});
+If you already have app.use(express.static(...)) – just confirm the path points to ../dist.
+
+4. .replit file
+tomlrun = "npm run start"
+web = { port = 3000 }
+Replit reads this on every Run and automatically opens the port to the internet.
+
+5. Commit & Push
+bashgit add replit.nix .replit package.json server/index.ts
+git commit -m "production deploy config"
+git push
+Replit will:
+
+Install Node 20 (from replit.nix)
+Run npm install (cached)
+Execute npm run start → vite build → node server/index.js
+Expose port 3000 → public URL.
+
+
+QUICK TROUBLESHOOTING CHECKLIST
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SymptomFixStill see “Run this app…”Make sure .replit exists and you clicked Run after pushing.404 on /dist filesVerify vite.config.ts outputs to dist (default). Run npm run build locally to confirm.CORS errorsAll API calls are now same-origin (/api/...). Remove any proxy settings in vite.config.ts.Groq 401Add your GROQ_API_KEY in Secrets (left sidebar → lock icon) → key name exactly GROQ_API_KEY.Map tiles blankAdd VITE_GOOGLE_MAPS_API_KEY and VITE_MAPBOX_TOKEN to Secrets the same way.
+
+ONE-CLICK VERIFICATION (run in Replit Shell)
+bashcurl -I $REPL_URL
+# should return: HTTP/1.1 200 OK
+# and Content-Type: text/html
+
+YOU’RE DONE!
+After step 3 you will have a live, public, production-ready URL that shows:
+
+All 24+ features (Street View, AI vibe, budget calc, senior suite, compare drawer, etc.)
+Dark/light mode
+Fully responsive UI
+Fast Groq-powered sentiment on every city
