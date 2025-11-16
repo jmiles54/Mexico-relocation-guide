@@ -1,0 +1,60 @@
+'use client';
+
+import { useState } from 'react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+
+const COLORS = ['#FF6B35', '#00A896', '#F7931E', '#9B59B6'];
+
+export default function BudgetEngine() {
+  const [budget, setBudget] = useState({
+    rent: 1200, mobility: 250, healthcare: 180, lifestyle: 700
+  });
+
+  const total = Object.values(budget).reduce((a, b) => a + b, 0);
+  const data = Object.entries(budget).map(([k, v]) => ({
+    name: k.charAt(0).toUpperCase() + k.slice(1),
+    value: v
+  }));
+
+  return (
+    <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 shadow-2xl max-w-4xl mx-auto">
+      <h2 className="text-5xl font-bold text-orange-400 text-center mb-8">
+        ${total.toLocaleString()}/mo
+      </h2>
+
+      <div className="grid md:grid-cols-2 gap-8">
+        <div className="space-y-6">
+          {Object.entries(budget).map(([key, value]) => (
+            <div key={key}>
+              <label className="text-lg font-semibold capitalize">{key}</label>
+              <input
+                type="range"
+                value={value}
+                onChange={(e) => setBudget(p => ({ ...p, [key]: +e.target.value }))}
+                min={key === 'rent' ? 600 : 50}
+                max={key === 'rent' ? 3000 : key === 'lifestyle' ? 2000 : 600}
+                step={50}
+                className="w-full h-3 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+              />
+              <p className="text-right text-sm font-bold">${value}</p>
+            </div>
+          ))}
+        </div>
+
+        <ResponsiveContainer width="100%" height={300}>
+          <PieChart>
+            <Pie data={data} cx="50%" cy="50%" innerRadius={70} outerRadius={110} dataKey="value">
+              {data.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}
+            </Pie>
+            <Tooltip formatter={(v: number) => `$${v}`} />
+            <Legend />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+
+      <button className="mt-8 w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-xl py-6 rounded-xl font-bold">
+        Save & Compare
+      </button>
+    </div>
+  );
+}
