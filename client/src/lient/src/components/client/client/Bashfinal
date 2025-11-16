@@ -1,0 +1,5 @@
+mkdir -p client/src/components
+# Paste all 6 files above
+git add client/ vite.config.ts vercel.json
+git commit -m "FINAL: Restore Mexico Portal"
+git push
